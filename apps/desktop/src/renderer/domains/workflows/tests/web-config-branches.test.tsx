@@ -6,6 +6,7 @@ vi.hoisted(() => {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1440 })
 })
 import { ConfigPanel } from '../components/ConfigPanel'
+import { expandAdvanced } from './expand-advanced'
 import { useWorkflowStore as store } from '../editor-store'
 import type { ModuleType } from '../types/workflow'
 Element.prototype.scrollIntoView = vi.fn()
@@ -33,6 +34,7 @@ it.each(cases.flatMap(row => row.options.map(([value, option]) => ({ ...row, val
   store.getState().updateNodeData(id, { [field]: old })
   store.getState().markAsSaved()
   render(<ConfigPanel selectedNodeId={id} />)
+  expandAdvanced()
   fireEvent.keyDown(screen.getByRole('combobox', { name: label }), { key: 'ArrowDown' })
   fireEvent.click(screen.getByRole('option', { name: option }))
   expect(store.getState().nodes[0].data[field]).toBe(value)
@@ -58,6 +60,7 @@ it.each([
   const id = store.getState().nodes[0].id
   store.getState().updateNodeData(id, { [field]: !value })
   render(<ConfigPanel selectedNodeId={id} />)
+  expandAdvanced()
   fireEvent.click(screen.getByRole('checkbox', { name: label }))
   expect(store.getState().nodes[0].data[field]).toBe(value)
   act(() => store.getState().undo())

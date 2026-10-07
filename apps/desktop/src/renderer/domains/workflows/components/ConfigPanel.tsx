@@ -9,13 +9,16 @@ import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, getNodeCon
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { ScrollArea } from './controls/scroll-area'
 import { useRequiredFields, getMissingRequiredLabels } from '../lib/requiredFields'
+import { useNodeIssues } from '../lib/nodeIssues'
+import { ADVANCED_FIELDS, type ConfigSection } from '../lib/configSections'
+import { SelectorMatchHint } from './config-panels/SelectorMatchHint'
 import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { Input } from './controls/input'
 import { NumberInput } from './controls/number-input'
 import { Label } from './controls/label'
 import { Button } from './controls/button'
 import { VariableInput } from './controls/variable-input'
-import { Trash2, Crosshair, Loader2, Ban, ChevronLeft, ChevronRight, Settings, Sparkles, ScanSearch } from 'lucide-react'
+import { Trash2, Crosshair, Loader2, Ban, ChevronDown, ChevronLeft, ChevronRight, Settings, Sparkles, ScanSearch } from 'lucide-react'
 import { moduleIcons } from './ModuleSidebar'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { elementPickerApi, systemApi } from '../api'
@@ -221,6 +224,26 @@ async function writeSelectorToClipboard(text: string): Promise<boolean> {
   }
 }
 
+/** 高级区默认折叠；其中有字段出错时强制展开，让错误可见。 */
+function AdvancedSection({ forceOpen, children }: { forceOpen: boolean; children: React.ReactNode }) {
+  const [userOpen, setUserOpen] = useState(false)
+  const open = userOpen || forceOpen
+  return (
+    <div className="pt-4 border-t space-y-4">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setUserOpen(!open)}
+        className="flex w-full items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wider"
+      >
+        高级设置
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <div className="space-y-4">{children}</div>}
+    </div>
+  )
+}
+
 export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelProps) {
   // 直接从 store 订阅 selectedNodeId，确保实时更新
   const storeSelectedNodeId = useWorkflowStore((state) => state.selectedNodeId)
@@ -229,6 +252,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const nodes = useWorkflowStore((state) => state.nodes)
   const documentId = useWorkflowStore((state) => state.id)
   const requiredFields = useRequiredFields()
+  const issues = useNodeIssues(selectedNodeId ?? '')
+  const running = useWorkflowStore((state) => state.executionStatus === 'running')
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData)
   const updateNodeConfig = useWorkflowStore((state) => state.updateNodeConfig)
   const deleteNode = useWorkflowStore((state) => state.deleteNode)
@@ -652,6 +677,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     )
   }
 
+  const fieldErrors: Record<string, string> = {}
+  for (const issue of issues) if (issue.field && !(issue.field in fieldErrors)) fieldErrors[issue.field] = issue.message
   // 渲染带选择器按钮的输入框
   // 测试选择器：在当前浏览器页面上验证是否命中并高亮（普通函数，避免在提前 return 之后调用 Hook）
   const handleTestSelector = async (id: string) => {
@@ -722,7 +749,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     }
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-2" data-config-field={id}>
         <div className="flex items-center justify-between">
           <Label htmlFor={id}>{label}</Label>
           <button
@@ -736,10 +763,13 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         </div>
         <div className="flex gap-2">
           <VariableInput
+            id={id}
             value={displayValue}
             onChange={handleSelectorChange}
             placeholder={selectorType === 'xpath' ? '//div[@class="example"]' : placeholder}
             className="flex-1"
+            aria-invalid={fieldErrors[id] ? true : undefined}
+            aria-describedby={fieldErrors[id] ? `${id}-error` : undefined}
           />
           <Button
             variant="outline"
@@ -771,21 +801,34 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         {isPicking && pickingField === id && (
           <p className="text-xs text-blue-500">Ctrl+点击单选，Alt+点击选择相似元素</p>
         )}
+        <SelectorMatchHint selector={rawValue} hints={(nodeData['selectorHints'] as Record<string, unknown>) || undefined} running={running} />
+        {fieldErrors[id] && <p id={`${id}-error`} role="alert" className="text-xs text-danger">{fieldErrors[id]}</p>}
       </div>
     )
   }
 
+  const isPilot = Object.hasOwn(ADVANCED_FIELDS, String(nodeData.moduleType))
+  const advancedHasError = (ADVANCED_FIELDS[String(nodeData.moduleType)] ?? []).some((key) => key in fieldErrors)
+  const jumpToField = (field: string | undefined) => {
+    if (!field) return
+    const host = document.querySelector(`[data-config-field="${field}"]`) ?? document.getElementById(field)
+    const control = host?.querySelector<HTMLElement>('input, textarea, select, [role="combobox"], [role="checkbox"]')
+      ?? (host instanceof HTMLElement && host.matches('input, textarea, select, button') ? host : host?.querySelector<HTMLElement>('button'))
+    control?.focus()
+  }
+
   // 渲染模块配置
-  const renderModuleConfig = () => {
+  const renderModuleConfig = (section: ConfigSection = 'all') => {
     if (excludedModuleTypes.has(nodeData.moduleType)) {
       return <div role="status">此节点已排除，保留原配置，仅供查看和导出<pre className="whitespace-pre-wrap break-all text-xs">{JSON.stringify(nodeData, null, 2)}</pre></div>
     }
     const props = { data: nodeData, onChange: handleChange, onBatchChange: handleBatchChange, renderSelectorInput }
+    const pilotProps = { data: nodeData, onChange: handleChange, renderSelectorInput, errors: fieldErrors, section }
 
 
     switch (nodeData.moduleType) {
       case 'open_page':
-        return <OpenPageConfig data={nodeData} onChange={handleChange} />
+        return <OpenPageConfig {...pilotProps} />
       case 'dp_open_page':
         return <DpOpenPageConfig data={nodeData} onChange={handleChange} />
       case 'dp_click':
@@ -806,10 +849,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <DpCloseConfig />
       case 'use_opened_page':
         return <UseOpenedPageConfig data={nodeData} onChange={handleChange} />
-      case 'click_element':
-        return <ClickElementConfig {...props} />
-      case 'hover_element':
-        return <HoverElementConfig {...props} />
       case 'press_key':
         return <PressKeyConfig {...props} />
       case 'web_cookie':
@@ -818,14 +857,18 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <WebStorageConfig {...props} />
       case 'web_intercept':
         return <WebInterceptConfig {...props} />
-      case 'input_text':
-        return <InputTextConfig {...props} />
-      case 'get_element_info':
-        return <GetElementInfoConfig {...props} />
       case 'wait':
         return <WaitConfig {...props} />
+      case 'click_element':
+        return <ClickElementConfig {...pilotProps} />
+      case 'hover_element':
+        return <HoverElementConfig {...pilotProps} />
+      case 'input_text':
+        return <InputTextConfig {...pilotProps} />
+      case 'get_element_info':
+        return <GetElementInfoConfig {...pilotProps} />
       case 'wait_element':
-        return <WaitElementConfig {...props} />
+        return <WaitElementConfig {...pilotProps} />
       case 'refresh_page':
         return <RefreshPageConfig data={nodeData} onChange={handleChange} />
       case 'go_back':
@@ -1581,17 +1624,14 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                   if (!requiredFields.data?.coveredModules.includes(String(nodeData.moduleType))) return <p className="text-xs text-muted-foreground">此节点尚未提供必填字段规则，请核对配置。</p>
                   const missing = getMissingRequiredLabels(String(nodeData.moduleType), nodeData as Record<string, unknown>, requiredFields.data.requiredFields, requiredFields.data)
                   if (missing.length === 0) return null
+                  const firstMissing = issues.find((issue) => issue.code === 'required-missing')?.field
                   return (
                     <div className="flex items-start gap-2 px-3 py-2 rounded-control bg-[hsl(var(--warning-50))] border border-[hsl(var(--warning-500)/0.3)] text-[hsl(var(--warning-700))]">
                       <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full bg-[hsl(var(--warning-500))] text-white flex items-center justify-center text-[10px] font-bold">!</span>
                       <div className="text-[12px] leading-relaxed">
-                        <span className="font-semibold">有 {missing.length} 个必填项未填写：</span>
-                        <span>
-                          {missing.map((label, i) => (
-                            <span key={i}>{i > 0 ? '、' : ''}{label}</span>
-                          ))}
-                        </span>
-                        <div className="text-[11px] text-[hsl(var(--warning-600))] mt-0.5">未填写可能导致该模块执行失败</div>
+                        <button type="button" className="font-semibold underline underline-offset-2" onClick={() => jumpToField(firstMissing)}>{missing.length} 项必填未填</button>
+                        <span>：<span>{missing.join('、')}</span></span>
+                        <div className="text-[11px] text-[hsl(var(--warning-600))] mt-0.5">未填写可能导致该模块执行失败，点击可定位到第一项</div>
                       </div>
                     </div>
                   )
@@ -1610,22 +1650,10 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                 </div>
 
                 {/* 模块特定配置 */}
-                {renderModuleConfig()}
+                {renderModuleConfig('basic')}
 
-                {/* 出错处理（M2 R2-08/R2-12）：统一 version 2 策略；旧设置只作为候选，启用后才生效 */}
-                <NodeErrorPolicyEditor
-                  data={nodeData as Record<string, unknown>}
-                  targets={nodes
-                    .filter((n) => n.type === 'moduleNode' && n.id !== selectedNodeId)
-                    .map((n) => ({ id: n.id, label: (n.data?.label as string) || moduleTypeLabels[n.data?.moduleType as keyof typeof moduleTypeLabels] || n.id }))}
-                  onChange={handleBatchChange}
-                />
-
-                {/* 高级配置 */}
-                <div className="pt-4 border-t space-y-4">
-                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    高级配置
-                  </h3>
+                <AdvancedSection forceOpen={advancedHasError}>
+                  {isPilot && renderModuleConfig('advanced')}
                   <div className="space-y-2">
                     <Label htmlFor="timeout">超时时间 (秒)</Label>
                     <NumberInput
@@ -1639,7 +1667,15 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                       0 表示不限制超时，当前模块建议: {(getModuleDefaultTimeout(nodeData.moduleType as import('../types/index').ModuleType) / 1000).toFixed(0)}秒
                     </p>
                   </div>
-                </div>
+                  {/* 出错处理（M2 R2-08/R2-12）：统一 version 2 策略；旧设置只作为候选，启用后才生效 */}
+                  <NodeErrorPolicyEditor
+                    data={nodeData as Record<string, unknown>}
+                    targets={nodes
+                      .filter((n) => n.type === 'moduleNode' && n.id !== selectedNodeId)
+                      .map((n) => ({ id: n.id, label: (n.data?.label as string) || moduleTypeLabels[n.data?.moduleType as keyof typeof moduleTypeLabels] || n.id }))}
+                    onChange={handleBatchChange}
+                  />
+                </AdvancedSection>
 
                 {/* 变量使用提示 */}
                 <div className="pt-4 border-t">

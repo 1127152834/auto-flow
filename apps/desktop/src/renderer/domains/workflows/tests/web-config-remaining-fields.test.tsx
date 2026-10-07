@@ -6,6 +6,7 @@ vi.hoisted(() => {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1440 })
 })
 import { ConfigPanel } from '../components/ConfigPanel'
+import { expandAdvanced } from './expand-advanced'
 import { useWorkflowStore as store } from '../editor-store'
 import { configureStudioConnection } from '../api/config'
 import { mockRequest } from '../api/mock-server'
@@ -19,10 +20,11 @@ async function reopen() {
   const loaded = await (await mockRequest('http://autoflow-studio.mock/api/local-workflows/load/remaining-fields.json')).json()
   act(() => { store.getState().clearWorkflow(); expect(store.getState().importWorkflow(loaded.content)).toBe(true) })
 }
-it.each([['0', 0, false], ['2.5', 2.5, false], ['{seconds}', '{seconds}', false], ['', '', false], ['-1', -1, true], ['Infinity', 'Infinity', true]] as const)('wait_element timeout %s preserves the editor contract, history and saved document', async (text, value, invalid) => {
+it.each([['0', 0, false], ['2.5', 2.5, false], ['{seconds}', '{seconds}', false], ['', '', true], ['-1', -1, true], ['Infinity', 'Infinity', true]] as const)('wait_element timeout %s preserves the editor contract, history and saved document', async (text, value, invalid) => {
   store.getState().addNode('wait_element', { x: 0, y: 0 })
   const id = store.getState().nodes[0].id
   render(<ConfigPanel selectedNodeId={id} />)
+  expandAdvanced()
   const input = screen.getByLabelText('超时时间(秒)') as HTMLInputElement
   expect(input.value).toBe('60')
   fireEvent.change(input, { target: { value: text } }); fireEvent.blur(input)

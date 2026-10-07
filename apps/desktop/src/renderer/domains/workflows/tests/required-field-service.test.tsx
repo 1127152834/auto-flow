@@ -64,7 +64,7 @@ it('shows rule loading failure, retries, then shows the actual missing URL in Co
  request.mockImplementation(async input=>{if(String(input).includes('required-fields')&&firstRuleRead){firstRuleRead=false;return Response.json({error:'字段服务暂不可用'},{status:503})}return Response.json(metadata)})
  useWorkflowStore.getState().addNode('open_page',{x:0,y:0},{url:''});render(<ConfigPanel selectedNodeId={useWorkflowStore.getState().nodes[0].id}/>);fireEvent.click(screen.getByTitle('展开配置面板'))
  await screen.findByRole('button',{name:'重新读取字段规则'});fireEvent.click(screen.getByRole('button',{name:'重新读取字段规则'}))
- await screen.findByText('有 1 个必填项未填写：');expect(screen.getByText('目标网址')).toBeTruthy()
+ await screen.findByText('1 项必填未填');expect(screen.getByText('目标网址')).toBeTruthy()
 })
 it('distinguishes missing coverage from a covered node with no required fields',async()=>{
  useWorkflowStore.getState().addNode('wait',{x:0,y:0});render(<ConfigPanel selectedNodeId={useWorkflowStore.getState().nodes[0].id}/>);fireEvent.click(screen.getByTitle('展开配置面板'))

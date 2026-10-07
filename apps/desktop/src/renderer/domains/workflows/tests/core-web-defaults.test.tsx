@@ -13,6 +13,7 @@ vi.hoisted(() => {
 
 import { createBlock } from '../components/blockFlowModel'
 import { ConfigPanel } from '../components/ConfigPanel'
+import { expandAdvanced } from './expand-advanced'
 import { useWorkflowStore as store } from '../editor-store'
 import type { ModuleType } from '../types/workflow'
 
@@ -24,6 +25,7 @@ afterEach(cleanup)
 function renderNode(type: ModuleType) {
   store.getState().addNode(type, { x: 0, y: 0 })
   render(<ConfigPanel selectedNodeId={store.getState().nodes[0].id} />)
+  expandAdvanced()
   return store.getState().nodes[0]
 }
 const value = (element: HTMLElement) => (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value

@@ -2,6 +2,8 @@
 import type React from 'react'
 import {BrowserEnvironmentFields} from './BrowserEnvironmentFields'
 import { useCallback, useState, lazy, Suspense } from 'react'
+import { ConfigField } from './ConfigField'
+import { inSection, type ConfigSection } from '../../lib/configSections'
 import type { Node, Edge } from '@xyflow/react'
 import type { NodeData } from '../../editor-store'
 import type { ModuleType } from '../../types/workflow'
@@ -37,48 +39,37 @@ const PythonEditorDialog = lazy(() => import('../PythonEditorDialog').then((m) =
 
 type RenderSelectorInput = (id: string, label: string, placeholder: string) => React.ReactNode
 
+/** 试点节点：section 决定渲染基本 / 高级 / 全部字段；errors 为字段 key 到错误文案。 */
+type PilotProps = {
+  data: NodeData
+  onChange: (key: string, value: unknown) => void
+  renderSelectorInput: RenderSelectorInput
+  errors?: Record<string, string>
+  section?: ConfigSection
+}
+
 // 打开网页配置
-export function OpenPageConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
-  
+export function OpenPageConfig({ data, onChange, errors, section = 'all' }: Omit<PilotProps, 'renderSelectorInput'> & { renderSelectorInput?: RenderSelectorInput }) {
+  const show = (key: string) => inSection('open_page', key, section)
   return (
     <>
-      <BrowserEnvironmentFields data={data} onChange={onChange}/>
-      <div className="space-y-2">
-        <Label htmlFor="url">网址</Label>
-        <UrlInput
-          value={(data.url as string) || ''}
-          onChange={(v) => onChange('url', v)}
-          placeholder="https://example.com"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="openMode">打开方式</Label>
-        <Select
-          id="openMode"
-          value={(data.openMode as string) || 'new_tab'}
-          onChange={(e) => onChange('openMode', e.target.value)}
-        >
+      {show('browserEnvironment') && <div data-config-field="browserEnvironment"><BrowserEnvironmentFields data={data} onChange={onChange}/></div>}
+      {show('url') && <div data-config-field="url"><ConfigField label="网址" error={errors?.url}>
+        {() => <UrlInput value={(data.url as string) || ''} onChange={(v) => onChange('url', v)} placeholder="https://example.com" />}
+      </ConfigField></div>}
+      {show('openMode') && <div data-config-field="openMode"><ConfigField label="打开方式" error={errors?.openMode} hint={(data.openMode as string) === 'current_tab' ? '在当前标签页打开，会关闭当前页面' : '在新标签页打开，保留当前页面'}>
+        {c => <Select {...c} value={(data.openMode as string) || 'new_tab'} onChange={(e) => onChange('openMode', e.target.value)}>
           <option value="new_tab">新标签页</option>
           <option value="current_tab">当前标签页</option>
-        </Select>
-        <p className="text-xs text-muted-foreground">
-          {(data.openMode as string) === 'current_tab' 
-            ? '在当前标签页打开，会关闭当前页面'
-            : '在新标签页打开，保留当前页面'}
-        </p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="waitUntil">等待条件</Label>
-        <Select
-          id="waitUntil"
-          value={(data.waitUntil as string) || 'load'}
-          onChange={(e) => onChange('waitUntil', e.target.value)}
-        >
+        </Select>}
+      </ConfigField></div>}
+      {show('waitUntil') && <div data-config-field="waitUntil"><ConfigField label="等待条件" error={errors?.waitUntil}>
+        {c => <Select {...c} value={(data.waitUntil as string) || 'load'} onChange={(e) => onChange('waitUntil', e.target.value)}>
           <option value="load">页面加载完成</option>
           <option value="domcontentloaded">DOM加载完成</option>
           <option value="networkidle">网络空闲</option>
-        </Select>
-      </div>
+        </Select>}
+      </ConfigField></div>}
     </>
   )
 }
@@ -115,75 +106,46 @@ export function UseOpenedPageConfig({ data, onChange }: { data: NodeData; onChan
 }
 
 // 点击元素配置
-export function ClickElementConfig({ 
-  data, 
-  onChange, 
-  renderSelectorInput 
-}: { 
-  data: NodeData
-  onChange: (key: string, value: unknown) => void
-  renderSelectorInput: RenderSelectorInput
-}) {
-  
+export function ClickElementConfig({ data, onChange, renderSelectorInput, errors, section = 'all' }: PilotProps) {
+  const show = (key: string) => inSection('click_element', key, section)
   return (
     <>
-      {renderSelectorInput('selector', '元素选择器', '例如: #button, .submit')}
-      <div className="space-y-2">
-        <Label htmlFor="clickType">点击类型</Label>
-        <Select
-          id="clickType"
-          value={(data.clickType as string) || 'single'}
-          onChange={(e) => onChange('clickType', e.target.value)}
-        >
+      {show('selector') && renderSelectorInput('selector', '元素选择器', '例如: #button, .submit')}
+      {show('clickType') && <div data-config-field="clickType"><ConfigField label="点击类型" error={errors?.clickType}>
+        {c => <Select {...c} value={(data.clickType as string) || 'single'} onChange={(e) => onChange('clickType', e.target.value)}>
           <option value="single">单击</option>
           <option value="double">双击</option>
           <option value="right">右键</option>
-        </Select>
-      </div>
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="followNewTab"
-          checked={(data.followNewTab as boolean) ?? false}
-          onCheckedChange={(c) => onChange('followNewTab', c)}
-        />
-        <Label htmlFor="followNewTab" className="cursor-pointer">点击后跟进新标签页</Label>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {(data.followNewTab as boolean)
-          ? '点击后若打开了新标签页，自动切换到该标签页，后续模块在新标签页上继续操作。'
-          : '默认不切换：点击链接打开新标签页后，后续模块仍在原页面操作，容易出现「元素明明在新页面上却找不到」。勾选此项即可自动跟进。'}
-      </p>
+        </Select>}
+      </ConfigField></div>}
+      {show('followNewTab') && <div data-config-field="followNewTab" className="space-y-2">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="followNewTab"
+            checked={(data.followNewTab as boolean) ?? false}
+            onCheckedChange={(c) => onChange('followNewTab', c)}
+          />
+          <Label htmlFor="followNewTab" className="cursor-pointer">点击后跟进新标签页</Label>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {(data.followNewTab as boolean)
+            ? '点击后若打开了新标签页，自动切换到该标签页，后续模块在新标签页上继续操作。'
+            : '默认不切换：点击链接打开新标签页后，后续模块仍在原页面操作，容易出现「元素明明在新页面上却找不到」。勾选此项即可自动跟进。'}
+        </p>
+      </div>}
     </>
   )
 }
 
 // 悬停元素配置
-export function HoverElementConfig({ 
-  data, 
-  onChange, 
-  renderSelectorInput 
-}: { 
-  data: NodeData
-  onChange: (key: string, value: unknown) => void
-  renderSelectorInput: RenderSelectorInput
-}) {
-  
+export function HoverElementConfig({ data, onChange, renderSelectorInput, errors, section = 'all' }: PilotProps) {
+  const show = (key: string) => inSection('hover_element', key, section)
   return (
     <>
-      {renderSelectorInput('selector', '元素选择器', '例如: #element, .hover-target')}
-      <div className="space-y-2">
-        <Label htmlFor="hoverDuration">悬停时长(秒)</Label>
-        <NumberInput
-          id="hoverDuration"
-          value={(data.hoverDuration as number) ?? 0.5}
-          onChange={(v) => onChange('hoverDuration', v)}
-          defaultValue={0.5}
-          min={0}
-          max={10}
-          step={0.1}
-        />
-        <p className="text-xs text-muted-foreground">鼠标悬停在元素上的时长，单位秒</p>
-      </div>
+      {show('selector') && renderSelectorInput('selector', '元素选择器', '例如: #element, .hover-target')}
+      {show('hoverDuration') && <div data-config-field="hoverDuration"><ConfigField label="悬停时长(秒)" error={errors?.hoverDuration} hint="鼠标悬停在元素上的时长，单位秒">
+        {c => <NumberInput {...c} value={(data.hoverDuration as number) ?? 0.5} onChange={(v) => onChange('hoverDuration', v)} defaultValue={0.5} min={0} max={10} step={0.1} />}
+      </ConfigField></div>}
     </>
   )
 }
@@ -223,29 +185,15 @@ export function PressKeyConfig({
 }
 
 // 输入文本配置
-export function InputTextConfig({ 
-  data, 
-  onChange, 
-  renderSelectorInput 
-}: { 
-  data: NodeData
-  onChange: (key: string, value: unknown) => void
-  renderSelectorInput: RenderSelectorInput
-}) {
-  
+export function InputTextConfig({ data, onChange, renderSelectorInput, errors, section = 'all' }: PilotProps) {
+  const show = (key: string) => inSection('input_text', key, section)
   return (
     <>
-      {renderSelectorInput('selector', '元素选择器', '例如: #input, .text-field')}
-      <div className="space-y-2">
-        <Label htmlFor="text">输入文本</Label>
-        <VariableInput
-          value={(data.text as string) || ''}
-          onChange={(v) => onChange('text', v)}
-          placeholder="要输入的文本内容"
-          multiline
-        />
-      </div>
-      <div className="flex items-center space-x-2">
+      {show('selector') && renderSelectorInput('selector', '元素选择器', '例如: #input, .text-field')}
+      {show('text') && <div data-config-field="text"><ConfigField label="输入文本" error={errors?.text}>
+        {c => <VariableInput {...c} value={(data.text as string) || ''} onChange={(v) => onChange('text', v)} placeholder="要输入的文本内容" multiline />}
+      </ConfigField></div>}
+      {show('clearBefore') && <div data-config-field="clearBefore" className="flex items-center space-x-2">
         <Checkbox
           id="clearBefore"
           checked={(data.clearBefore as boolean) ?? true}
@@ -254,61 +202,33 @@ export function InputTextConfig({
         <Label htmlFor="clearBefore" className="cursor-pointer">
           输入前清空原有内容
         </Label>
-      </div>
+      </div>}
     </>
   )
 }
 
 // 获取元素信息配置
-export function GetElementInfoConfig({ 
-  data, 
-  onChange, 
-  renderSelectorInput 
-}: { 
-  data: NodeData
-  onChange: (key: string, value: unknown) => void
-  renderSelectorInput: RenderSelectorInput
-}) {
-  
+export function GetElementInfoConfig({ data, onChange, renderSelectorInput, errors, section = 'all' }: PilotProps) {
+  const show = (key: string) => inSection('get_element_info', key, section)
   return (
     <>
-      {renderSelectorInput('selector', '元素选择器', '例如: #title, .content')}
-      <div className="space-y-2">
-        <Label htmlFor="attribute">获取属性</Label>
-        <Select
-          id="attribute"
-          value={(data.attribute as string) || 'text'}
-          onChange={(e) => onChange('attribute', e.target.value)}
-        >
+      {show('selector') && renderSelectorInput('selector', '元素选择器', '例如: #title, .content')}
+      {show('attribute') && <div data-config-field="attribute"><ConfigField label="获取属性" error={errors?.attribute} hint='选择"元素属性值"将返回包含所有HTML属性的字典对象'>
+        {c => <Select {...c} value={(data.attribute as string) || 'text'} onChange={(e) => onChange('attribute', e.target.value)}>
           <option value="text">文本内容</option>
           <option value="innerHTML">HTML内容</option>
           <option value="value">输入框值</option>
           <option value="href">链接地址</option>
           <option value="src">图片地址</option>
           <option value="attributes">元素属性值（字典）</option>
-        </Select>
-        <p className="text-xs text-muted-foreground">
-          选择"元素属性值"将返回包含所有HTML属性的字典对象
-        </p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="variableName">存储到变量</Label>
-        <VariableNameInput
-          id="variableName"
-          value={(data.variableName as string) || ''}
-          onChange={(v) => onChange('variableName', v)}
-          placeholder="变量名"
-          isStorageVariable={true}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="columnName">存储到数据表列</Label>
-        <VariableInput
-          value={(data.columnName as string) || ''}
-          onChange={(v) => onChange('columnName', v)}
-          placeholder="列名(可选)"
-        />
-      </div>
+        </Select>}
+      </ConfigField></div>}
+      {show('variableName') && <div data-config-field="variableName"><ConfigField label="存储到变量" error={errors?.variableName}>
+        {c => <VariableNameInput {...c} value={(data.variableName as string) || ''} onChange={(v) => onChange('variableName', v)} placeholder="变量名" isStorageVariable={true} />}
+      </ConfigField></div>}
+      {show('columnName') && <div data-config-field="columnName"><ConfigField label="存储到数据表列" error={errors?.columnName}>
+        {c => <VariableInput {...c} value={(data.columnName as string) || ''} onChange={(v) => onChange('columnName', v)} placeholder="列名(可选)" />}
+      </ConfigField></div>}
     </>
   )
 }
@@ -356,45 +276,22 @@ export function WaitConfig({
 }
 
 // 等待元素配置
-export function WaitElementConfig({ 
-  data, 
-  onChange, 
-  renderSelectorInput 
-}: { 
-  data: NodeData
-  onChange: (key: string, value: unknown) => void
-  renderSelectorInput: RenderSelectorInput
-}) {
-  
+export function WaitElementConfig({ data, onChange, renderSelectorInput, errors, section = 'all' }: PilotProps) {
+  const show = (key: string) => inSection('wait_element', key, section)
   return (
     <>
-      {renderSelectorInput('selector', '元素选择器', '例如: #element, .class')}
-      <div className="space-y-2">
-        <Label htmlFor="waitCondition">等待条件</Label>
-        <Select
-          id="waitCondition"
-          value={(data.waitCondition as string) || 'visible'}
-          onChange={(e) => onChange('waitCondition', e.target.value)}
-        >
+      {show('selector') && renderSelectorInput('selector', '元素选择器', '例如: #element, .class')}
+      {show('waitCondition') && <div data-config-field="waitCondition"><ConfigField label="等待条件" error={errors?.waitCondition} hint="等待元素满足指定条件，超时后会抛出错误">
+        {c => <Select {...c} value={(data.waitCondition as string) || 'visible'} onChange={(e) => onChange('waitCondition', e.target.value)}>
           <option value="visible">可见</option>
           <option value="hidden">隐藏</option>
           <option value="attached">已附加</option>
           <option value="detached">已分离</option>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="waitTimeout">超时时间(秒)</Label>
-        <NumberInput
-          id="waitTimeout"
-          value={(data.waitTimeout as number) ?? 60}
-          onChange={(v) => onChange('waitTimeout', v)}
-          defaultValue={60}
-          min={0}
-        />
-      </div>
-      <p className="text-xs text-muted-foreground">
-        等待元素满足指定条件，超时后会抛出错误
-      </p>
+        </Select>}
+      </ConfigField></div>}
+      {show('waitTimeout') && <div data-config-field="waitTimeout"><ConfigField label="超时时间(秒)" error={errors?.waitTimeout}>
+        {c => <NumberInput {...c} value={(data.waitTimeout as number) ?? 60} onChange={(v) => onChange('waitTimeout', v)} defaultValue={60} min={0} />}
+      </ConfigField></div>}
     </>
   )
 }

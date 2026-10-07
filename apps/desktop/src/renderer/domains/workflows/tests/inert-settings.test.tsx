@@ -7,6 +7,7 @@ vi.hoisted(() => {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1440 })
 })
 import { ConfigPanel } from '../components/ConfigPanel'
+import { expandAdvanced } from './expand-advanced'
 import { useWorkflowStore as store } from '../editor-store'
 import { describeInertSettings, findInertSettings, inertKeys } from '../lib/inertSettings'
 
@@ -19,6 +20,7 @@ it('hides the old retry and timeout actions, offers the old error policy only as
   const id = store.getState().nodes[0].id
   store.getState().updateNodeData(id, { retryCount: 3, timeoutAction: 'skip', errorPolicy: { mode: 'retry-self', maxRetries: 2, interval: 0, onExhausted: 'stop' } })
   render(<ConfigPanel selectedNodeId={id} />)
+  expandAdvanced()
   expect(screen.getByText('超时时间 (秒)')).toBeInTheDocument()
   for (const label of ['运行超时后', '重试次数', '重试耗尽后', '重试间隔（秒）', '退避策略']) expect(screen.queryByText(label)).toBeNull()
   // Remediation M2 R2-12: the unified control is visible, and the old settings are a not-yet-active candidate.

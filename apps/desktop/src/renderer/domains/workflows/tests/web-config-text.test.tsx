@@ -6,6 +6,7 @@ vi.hoisted(() => {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1440 })
 })
 import { ConfigPanel } from '../components/ConfigPanel'
+import { expandAdvanced } from './expand-advanced'
 import { useWorkflowStore as store } from '../editor-store'
 import type { ModuleType } from '../types/workflow'
 Element.prototype.scrollIntoView = vi.fn()
@@ -29,6 +30,7 @@ it.each([
   store.getState().updateNodeData(id, { [field]: 'initial' })
   store.getState().markAsSaved()
   render(<ConfigPanel selectedNodeId={id} />)
+  expandAdvanced()
   const input = screen.getByPlaceholderText(placeholder)
   fireEvent.change(input, { target: { value } })
   fireEvent.blur(input)

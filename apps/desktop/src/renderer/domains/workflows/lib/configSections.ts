@@ -20,3 +20,9 @@ export function splitFields(moduleType: string, keys: readonly string[]): { basi
   for (const key of keys) (isAdvancedField(moduleType, key) ? advanced : basic).push(key)
   return { basic, advanced }
 }
+
+export type ConfigSection = 'all' | 'basic' | 'advanced'
+
+export function inSection(moduleType: string, key: string, section: ConfigSection): boolean {
+  return section === 'all' || isAdvancedField(moduleType, key) === (section === 'advanced')
+}

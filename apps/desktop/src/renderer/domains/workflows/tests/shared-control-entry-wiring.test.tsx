@@ -45,6 +45,7 @@ vi.mock('../components/controls/dual-coordinate-input', () => ({ DualCoordinateI
 import { modelApi } from '../api'
 import { excludedModuleTypes, moduleCategories } from '../lib/moduleCatalog'
 import { ConfigPanel } from '../components/ConfigPanel'
+import { expandAdvanced } from './expand-advanced'
 import { useWorkflowStore as store } from '../editor-store'
 import type { ModuleType } from '../types/workflow'
 
@@ -90,6 +91,7 @@ it.each(entries)('$id follows its current ConfigPanel consumer or explicit scope
   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
   const nodeId = store.getState().nodes[0].id
   render(<ConfigPanel selectedNodeId={nodeId} />)
+  expandAdvanced()
   const mediaPrompt = tool === 'VariableInput' && ['ai_generate_image', 'ai_generate_video'].includes(type)
   const controls = screen.queryAllByTestId(`tool-${tool}`)
   if (excludedModuleTypes.has(type)) {

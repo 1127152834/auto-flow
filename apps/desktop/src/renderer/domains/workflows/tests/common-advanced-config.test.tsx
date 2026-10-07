@@ -9,6 +9,7 @@ vi.hoisted(() => {
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store, type ErrorPolicy } from '../editor-store'
 import { mockRequest } from '../api/mock-server'
+import { expandAdvanced } from './expand-advanced'
 Element.prototype.scrollIntoView = vi.fn()
 let id: string
 beforeEach(() => { store.getState().clearWorkflow(); store.getState().addNode('close_page', { x: 0, y: 0 }); id = store.getState().nodes[0].id })
@@ -31,7 +32,7 @@ function history(field: string, previous: unknown, next: unknown) {
   expect(data()[field]).toEqual(next)
 }
 it.each([['timeout', '超时时间 (秒)', '1abc'], ['timeout', '超时时间 (秒)', '-1']])('ADV.numeric.%s.%s.%s retains invalid drafts under existing NumberInput contract', (field, label, value) => {
-  store.getState().updateNodeData(id, { [field]: 3 }); render(<ConfigPanel selectedNodeId={id} />)
+  store.getState().updateNodeData(id, { [field]: 3 }); render(<ConfigPanel selectedNodeId={id} />); expandAdvanced()
   edit(label, value); const expected = value === '-1' ? -1 : value
   expect(labelled(label, 'textbox').getAttribute('aria-invalid')).toBe('true'); history(field, 3, expected)
 })
@@ -39,24 +40,24 @@ it('ADV.policy-v2 shows an old error policy as a candidate and enabling it is un
   // Remediation M2 R2-08/R2-12: the old shape is never executed until the person enables it.
   const previous: ErrorPolicy = { mode: 'retry-self', maxRetries: 2, interval: 1, onExhausted: 'stop' }
   store.getState().updateNodeData(id, { errorPolicy: previous }); store.getState().markAsSaved()
-  render(<ConfigPanel selectedNodeId={id} />)
+  render(<ConfigPanel selectedNodeId={id} />); expandAdvanced()
   expect(screen.getByRole('status', { name: '未生效的出错设置' })).toHaveTextContent('以前保存的设置“出错时重试 2 次”尚未生效')
   fireEvent.click(screen.getByRole('button', { name: '启用这项设置' }))
   history('errorPolicy', previous, { version: 2, onError: 'retry', maxRetries: 2, backoff: { kind: 'fixed', initialSeconds: 1, maxSeconds: 1, jitter: false }, retryOn: 'any', gotoNodeId: null, onExhausted: 'stop' })
 })
 it('ADV.context does not send detached old field blur into a newly selected node', () => {
   store.getState().addNode('close_page', { x: 0, y: 100 }); const second = store.getState().nodes[1].id
-  const view = render(<ConfigPanel selectedNodeId={id} />); const old = labelled('超时时间 (秒)', 'textbox')
+  const view = render(<ConfigPanel selectedNodeId={id} />); expandAdvanced(); const old = labelled('超时时间 (秒)', 'textbox')
   fireEvent.change(old, { target: { value: '12' } }); view.rerender(<ConfigPanel selectedNodeId={second} />); fireEvent.blur(old)
   expect(store.getState().nodes.find(n => n.id === second)!.data.timeout).not.toBe(12); expect(data().timeout).toBe(12)
 })
 it('ADV.save persists shared fields through real mock save/load and re-render', async () => {
-  render(<ConfigPanel selectedNodeId={id} />)
+  render(<ConfigPanel selectedNodeId={id} />); expandAdvanced()
   edit('节点备注', '高级配置验收'); edit('超时时间 (秒)', '12.5'); choose('出错时', '原地重试当前模块')
   const expected = { ...data() }; const content = JSON.parse(store.getState().exportWorkflow())
   const saved = await mockRequest('http://autoflow-studio.mock/api/local-workflows/save-to-folder', { method: 'POST', body: JSON.stringify({ filename: 'advanced-fields', content }) }); expect(saved.status).toBe(200)
   const loaded = await (await mockRequest('http://autoflow-studio.mock/api/local-workflows/load/advanced-fields.json')).json()
-  cleanup(); act(() => { store.getState().clearWorkflow(); expect(store.getState().importWorkflow(loaded.content)).toBe(true) }); render(<ConfigPanel selectedNodeId={id} />)
+  cleanup(); act(() => { store.getState().clearWorkflow(); expect(store.getState().importWorkflow(loaded.content)).toBe(true) }); render(<ConfigPanel selectedNodeId={id} />); expandAdvanced()
   expect(data()).toEqual(expected); expect((labelled('节点备注', 'textbox') as HTMLInputElement).value).toBe('高级配置验收')
 })
 it.each([
@@ -73,7 +74,7 @@ it.each(['stop', 'continue', 'retry-self', 'retry-from'] as const)('ADV.prefligh
   expect(staticNumberIssues(store.getState().nodes)).toEqual([])
 })
 it('ADV.name-history editing shared note participates in undo and reopen', () => {
-  store.getState().updateNodeData(id, { name: '原备注' }); render(<ConfigPanel selectedNodeId={id} />)
+  store.getState().updateNodeData(id, { name: '原备注' }); render(<ConfigPanel selectedNodeId={id} />); expandAdvanced()
   edit('节点备注', '新备注'); history('name', '原备注', '新备注')
 })
 it.each([
