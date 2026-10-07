@@ -1,0 +1,49 @@
+{
+  "text": {
+    "gray-800": "text-ink",
+    "gray-900": "text-ink",
+    "gray-700": "text-ink",
+    "gray-500": "text-muted",
+    "gray-600": "text-muted",
+    "red-500": "text-danger",
+    "red-600": "text-danger",
+    "red-700": "text-danger-strong",
+    "red-800": "text-danger-strong",
+    "amber-600": "text-warning",
+    "amber-700": "text-warning",
+    "amber-800": "text-warning",
+    "amber-900": "text-warning",
+    "green-600": "text-success",
+    "green-700": "text-success",
+    "green-800": "text-success",
+    "green-900": "text-success"
+  },
+  "bg": {
+    "gray-50": "bg-surface-subtle",
+    "gray-100": "bg-surface-hover",
+    "gray-200": "bg-line",
+    "red-50": "bg-danger-soft",
+    "red-100": "bg-danger-soft",
+    "red-500": "bg-danger",
+    "red-600": "bg-danger",
+    "amber-50": "bg-warning-soft",
+    "amber-100": "bg-warning-soft",
+    "amber-500": "bg-warning",
+    "amber-600": "bg-warning",
+    "green-50": "bg-success-soft",
+    "green-100": "bg-success-soft",
+    "green-500": "bg-success",
+    "green-600": "bg-success",
+    "emerald-500": "bg-success",
+    "emerald-600": "bg-success"
+  },
+  "border": {
+    "gray-100": "border-line",
+    "gray-200": "border-line",
+    "gray-300": "border-line-strong",
+    "red-200": "border-danger",
+    "red-300": "border-danger",
+    "amber-200": "border-warning",
+    "green-200": "border-success"
+  }
+}
