@@ -28,6 +28,7 @@ from autoflow.adapters.http.project_run_interactions import (
     project_pending_interactions_router,
     project_run_interactions_router,
 )
+from autoflow.adapters.http.project_run_progress import project_run_progress_router
 from autoflow.adapters.http.project_runs import project_runs_router
 from autoflow.adapters.http.project_sheets import (
     internal_google_authorizations_router,
@@ -55,8 +56,10 @@ from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
 from autoflow.application.project_runs.events import ProjectRunEvents
 from autoflow.application.project_runs.evidence import ProjectRunEvidence
+from autoflow.application.project_runs.input_match import InputMatchService
 from autoflow.application.project_runs.interactions import ProjectRunInteractions
 from autoflow.application.project_runs.processing_units import ProcessingUnitService
+from autoflow.application.project_runs.progress import BatchProgressService
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.project_sync.bindings import SheetsBindingService
@@ -102,6 +105,8 @@ class ProjectHttpServices:
     sheets_impacts: SheetsImpactService
     sync: SheetsSyncService
     processing_units: ProcessingUnitService
+    run_progress: BatchProgressService
+    input_matching: InputMatchService
     schedules: AutomationScheduleService
     identities: IdentityService
 
@@ -111,6 +116,7 @@ def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None
     app.include_router(project_lifecycle_router(services.lifecycle))
     app.include_router(project_statistics_router(services.statistics))
     app.include_router(project_runs_router(services.run_coordinator, services.run_queries, services.run_scheduler, services.gate))
+    app.include_router(project_run_progress_router(services.run_progress, services.input_matching))
     app.include_router(project_run_evidence_router(services.run_evidence))
     app.include_router(project_run_events_router(services.run_events))
     app.include_router(project_run_interactions_router(services.run_interactions, services.gate))

@@ -1469,6 +1469,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/batches/{batchId}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Batch Progress */
+        get: operations["batch_progress_api_v1_projects__projectId__batches__batchId__progress_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/input-match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Input Match */
+        post: operations["input_match_api_v1_projects__projectId__automations__automationId__input_match_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/tasks/{taskId}/node-attempts": {
         parameters: {
             query?: never;
@@ -7471,6 +7505,20 @@ export type components = {
             /** Sort */
             sort: string;
         };
+        /** BatchProgress */
+        BatchProgress: {
+            ledger: components["schemas"]["LedgerCounts"];
+            throughput: components["schemas"]["Throughput"];
+            /** Runningtasks */
+            runningTasks: components["schemas"]["RunningTaskSummary"][];
+            /** Failuregroups */
+            failureGroups: components["schemas"]["FailureGroup"][];
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
         /** BatchRead */
         BatchRead: {
             /** Id */
@@ -9581,6 +9629,20 @@ export type components = {
             /** Reasonsummary */
             reasonSummary?: string | null;
         };
+        /** FailureGroup */
+        FailureGroup: {
+            /**
+             * Errorcode
+             * @enum {string}
+             */
+            errorCode: "input_invalid" | "business_failed" | "page_error" | "environment_error" | "outcome_unknown" | "cancelled" | "unknown";
+            /** Count */
+            count: number;
+            /** Samplemessage */
+            sampleMessage: string | null;
+            /** Sampleunitids */
+            sampleUnitIds: string[];
+        };
         /** FieldEqualsRelation */
         FieldEqualsRelation: {
             /**
@@ -10138,6 +10200,35 @@ export type components = {
             /** Modelproviderid */
             modelProviderId?: string | null;
         };
+        /** InputMatchItem */
+        InputMatchItem: {
+            /** Inputid */
+            inputId: string;
+            /** Alias */
+            alias: string;
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "counted" | "dependsOnOtherInput" | "tableUnavailable" | "filterInvalid";
+            /** Matchedcount */
+            matchedCount: number | null;
+            /** Unprocessedcount */
+            unprocessedCount: number | null;
+            /** Sample */
+            sample: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+        };
+        /** InputMatchRequest */
+        InputMatchRequest: {
+            inputPlan: components["schemas"]["InputPlan"];
+        };
+        /** InputMatchResponse */
+        InputMatchResponse: {
+            /** Inputs */
+            inputs: components["schemas"]["InputMatchItem"][];
+        };
         /** InputPlan */
         InputPlan: {
             /** Inputs */
@@ -10317,6 +10408,25 @@ export type components = {
             size: number | null;
             /** Installed */
             installed: boolean;
+        };
+        /** LedgerCounts */
+        LedgerCounts: {
+            /** Total */
+            total: number;
+            /** Pending */
+            pending: number;
+            /** Running */
+            running: number;
+            /** Succeeded */
+            succeeded: number;
+            /** Failedretryable */
+            failedRetryable: number;
+            /** Quarantined */
+            quarantined: number;
+            /** Needsreview */
+            needsReview: number;
+            /** Skipped */
+            skipped: number;
         };
         /** LicenseRead */
         LicenseRead: {
@@ -12430,6 +12540,21 @@ export type components = {
             startedAt: string | null;
             /** Finishedat */
             finishedAt: string | null;
+        };
+        /** RunningTaskSummary */
+        RunningTaskSummary: {
+            /** Taskid */
+            taskId: string;
+            /** Displayname */
+            displayName: string | null;
+            /** Identityname */
+            identityName: string | null;
+            /** Currentnodename */
+            currentNodeName: string | null;
+            /** Startedat */
+            startedAt: string | null;
+            /** Elapsedseconds */
+            elapsedSeconds: number | null;
         };
         /** RuntimePaths */
         RuntimePaths: {
@@ -15062,6 +15187,17 @@ export type components = {
             createdAt: string;
             /** Completedat */
             completedAt?: string | null;
+        };
+        /** Throughput */
+        Throughput: {
+            /** Windowminutes */
+            windowMinutes: number;
+            /** Recentperminute */
+            recentPerMinute: number;
+            /** Averageperminute */
+            averagePerMinute: number;
+            /** Etaseconds */
+            etaSeconds: number | null;
         };
         /** UsagePoint */
         UsagePoint: {
@@ -21390,6 +21526,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    batch_progress_api_v1_projects__projectId__batches__batchId__progress_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchProgress"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    input_match_api_v1_projects__projectId__automations__automationId__input_match_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InputMatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InputMatchResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
         };

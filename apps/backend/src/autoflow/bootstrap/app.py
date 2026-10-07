@@ -63,7 +63,9 @@ from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
 from autoflow.application.project_runs.events import ProjectRunEvents
 from autoflow.application.project_runs.evidence import ProjectRunEvidence
+from autoflow.application.project_runs.input_match import InputMatchService
 from autoflow.application.project_runs.processing_units import ProcessingUnitService
+from autoflow.application.project_runs.progress import BatchProgressService
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.resources import ProjectRunResourceResolver
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
@@ -775,6 +777,8 @@ def create_app(
     register_project_routes(app, ProjectHttpServices(
         identities=IdentityService(SqlAlchemyIdentities(session_factory), ProjectService(SqlAlchemyProjects(session_factory))),
         processing_units=ProcessingUnitService(session_factory),
+        run_progress=BatchProgressService(session_factory),
+        input_matching=InputMatchService(session_factory),
         schedules=automation_schedules,
         run_interactions=project_workflow_dispatcher.interactions,
         run_coordinator=project_run_coordinator,

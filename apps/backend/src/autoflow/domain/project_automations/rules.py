@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import math
 from typing import Any
@@ -100,6 +101,11 @@ def session_pool_blockers(document: dict[str, Any], mode: str = "pool") -> list[
             if retain:
                 reasons.append("流程结束时会保存浏览器环境")
     return list(dict.fromkeys(reasons))
+
+
+def validate_input_plan(value: Any, project_id: str | None = None) -> dict[str, Any]:
+    """Validate a (possibly unsaved) input plan; the argument is left untouched."""
+    return _input_plan(copy.deepcopy(value), project_id)
 
 
 def _input_plan(value: Any, project_id: str | None) -> dict[str, Any]:
