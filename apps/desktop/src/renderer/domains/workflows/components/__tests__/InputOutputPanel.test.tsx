@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { findInternalIds } from '../../../../shared/testing/internal-id-scan'
 
@@ -148,6 +148,29 @@ describe('输入与输出面板', () => {
   })
 })
 
+describe('键的编辑', () => {
+  it('edits the second field when two fields share a key', () => {
+    state().load(stored())
+    open()
+    fireEvent.change(within(field('手机号')).getByLabelText('字段标识'), { target: { value: 'password' } })
+    fireEvent.change(within(field('密码')).getByLabelText('中文名'), { target: { value: '口令' } })
+    expect(state().inputs[0].fields.map(item => item.name)).toEqual(['手机号', '口令'])
+    fireEvent.click(screen.getByRole('button', { name: '删除字段 口令' }))
+    expect(state().inputs[0].fields.map(item => item.name)).toEqual(['手机号'])
+  })
+
+  it('keeps a key set under 高级 when the name is edited afterwards', () => {
+    open()
+    fireEvent.click(screen.getByRole('button', { name: '新增分组' }))
+    fireEvent.click(screen.getByRole('button', { name: '新增字段' }))
+    const row = field('字段1')
+    fireEvent.change(within(row).getByLabelText('字段标识'), { target: { value: 'field7' } })
+    fireEvent.change(within(row).getByLabelText('中文名'), { target: { value: '手机号' } })
+    fireEvent.blur(within(row).getByLabelText('中文名'))
+    expect(state().inputs[0].fields[0].key).toBe('field7')
+  })
+})
+
 describe('从数据表导入', () => {
   const table = { tableId: 'tbl-1', name: '客户表' }
   const tableFields = [
@@ -186,6 +209,30 @@ describe('从数据表导入', () => {
     fireEvent.click(screen.getByRole('button', { name: '导入所选字段' }))
     expect(state().inputs).toHaveLength(1)
     expect(state().inputs[0].name).toBe('客户表')
+    expect(state().inputs[0].fields.map(item => item.key)).toEqual(['phone', 'age'])
+  })
+
+  it('reads every page of data tables', async () => {
+    const page = (n: number) => Array.from({ length: n === 3 ? 5 : 100 }, (_, i) => ({ tableId: `t${n}-${i}`, name: `表${n}-${i}` }))
+    request.mockImplementation(async (path: string) => {
+      const n = Number(/page=(\d+)/.exec(path)![1])
+      return { success: true, data: { items: page(n), total: 205, page: n, pageSize: 100 } }
+    })
+    open()
+    fireEvent.click(screen.getByRole('button', { name: '从数据表导入' }))
+    await screen.findByLabelText('数据表')
+    await waitFor(() => expect(screen.getByLabelText('数据表').querySelectorAll('option')).toHaveLength(206))
+  })
+
+  it('imports into a new group when the chosen group was deleted meanwhile', async () => {
+    state().load(stored())
+    open()
+    fireEvent.click(screen.getByRole('button', { name: '从数据表导入' }))
+    fireEvent.change(await screen.findByLabelText('数据表'), { target: { value: 'tbl-1' } })
+    await screen.findByRole('list', { name: '可导入的字段' })
+    act(() => state().removeInputAt(0))
+    fireEvent.click(screen.getByRole('button', { name: '导入所选字段' }))
+    expect(state().inputs).toHaveLength(1)
     expect(state().inputs[0].fields.map(item => item.key)).toEqual(['phone', 'age'])
   })
 

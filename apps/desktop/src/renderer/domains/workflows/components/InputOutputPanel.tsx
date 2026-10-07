@@ -32,9 +32,9 @@ function PanelBody() {
   const byPath = new Map(issues.map(issue => [issue.path, issue.message]))
   const problems = [...new Set([...loadIssues, ...serverIssues].map(issue => issue.message))]
   const addGroup = () => store().addInput({ key: suggestKey('', inputs.map(input => input.key), 'group'), name: `分组${inputs.length + 1}` })
-  const addField = (input: SignatureInputDraft) => {
+  const addField = (input: SignatureInputDraft, index: number) => {
     const key = suggestKey('', input.fields.map(field => field.key))
-    store().addField(input.key, { key, name: `字段${input.fields.length + 1}`, type: 'string' })
+    store().addFieldAt(index, { key, name: `字段${input.fields.length + 1}`, type: 'string' })
   }
   return <div className="space-y-6">
     <section aria-labelledby="io-inputs" className="space-y-3">
@@ -43,10 +43,10 @@ function PanelBody() {
         <div className="flex gap-2">
           <SignatureImport disabled={readOnly} groups={inputs.map(input => ({ key: input.key, name: input.name, fieldKeys: input.fields.map(field => field.key) }))}
             onApply={(target, items) => {
-              let groupKey: string
-              if ('groupKey' in target) groupKey = target.groupKey
-              else { groupKey = suggestKey(target.newName, inputs.map(input => input.key), 'group'); store().addInput({ key: groupKey, name: target.newName }) }
-              for (const item of items) store().addField(groupKey, { key: item.key, name: item.name, type: item.type, required: item.required })
+              let groupIndex: number
+              if ('groupIndex' in target) groupIndex = target.groupIndex
+              else { store().addInput({ key: suggestKey(target.newName, inputs.map(input => input.key), 'group'), name: target.newName }); groupIndex = store().inputs.length - 1 }
+              for (const item of items) store().addFieldAt(groupIndex, { key: item.key, name: item.name, type: item.type, required: item.required })
             }} />
           <Button size="sm" variant="outline" disabled={readOnly} onClick={addGroup}><Plus className="h-3.5 w-3.5" />新增分组</Button>
         </div>
@@ -60,14 +60,14 @@ function PanelBody() {
       {inputs.map((input, index) => <fieldset key={index} disabled={readOnly} className="m-0 space-y-3 rounded-control border p-3" aria-label={`分组 ${input.name}`}>
         <div className="flex items-end gap-3">
           <div className="min-w-0 flex-1"><ConfigField label="分组名称" error={byPath.get(`signature.inputs.${index}.key`)}>{control =>
-            <Input {...control} value={input.name} onChange={event => store().updateInput(input.key, { name: event.target.value })}
-              onBlur={() => { if (!saved.current.has(input.key) && AUTO_KEY.test(input.key) && input.name.trim()) store().updateInput(input.key, { key: suggestKey(input.name, inputs.filter(item => item !== input).map(item => item.key), 'group') }) }} />}</ConfigField></div>
-          <Button size="sm" variant="tonal-danger" aria-label={`删除分组 ${input.name}`} onClick={() => store().removeInput(input.key)}><Trash2 className="h-3.5 w-3.5" />删除分组</Button>
+            <Input {...control} value={input.name} onChange={event => store().updateInputAt(index, { name: event.target.value })}
+              onBlur={() => { if (!saved.current.has(input.key) && !input.keyEdited && AUTO_KEY.test(input.key) && input.name.trim()) store().updateInputAt(index, { key: suggestKey(input.name, inputs.filter(item => item !== input).map(item => item.key), 'group'), keyEdited: false }) }} />}</ConfigField></div>
+          <Button size="sm" variant="tonal-danger" aria-label={`删除分组 ${input.name}`} onClick={() => store().removeInputAt(index)}><Trash2 className="h-3.5 w-3.5" />删除分组</Button>
         </div>
-        <Advanced label="分组标识" hint="在流程里引用这个分组时使用的名字；已被引用时请不要修改。" value={input.key} onChange={value => store().updateInput(input.key, { key: value })} />
-        {input.fields.map((field, fieldIndex) => <FieldRow key={fieldIndex} input={input} field={field}
+        <Advanced label="分组标识" hint="在流程里引用这个分组时使用的名字；已被引用时请不要修改。" value={input.key} onChange={value => store().updateInputAt(index, { key: value })} />
+        {input.fields.map((field, fieldIndex) => <FieldRow key={fieldIndex} input={input} inputIndex={index} fieldIndex={fieldIndex} field={field}
           locked={saved.current.has(`${input.key}.${field.key}`)} error={path => byPath.get(`signature.inputs.${index}.fields.${fieldIndex}.${path}`)} />)}
-        <Button size="sm" variant="outline" onClick={() => addField(input)}><Plus className="h-3.5 w-3.5" />新增字段</Button>
+        <Button size="sm" variant="outline" onClick={() => addField(input, index)}><Plus className="h-3.5 w-3.5" />新增字段</Button>
       </fieldset>)}
     </section>
     <Outputs />
@@ -79,21 +79,21 @@ function Advanced({ label, hint, value, onChange, error }: { label: string; hint
     <div className="mt-2 max-w-xs"><ConfigField label={label} hint={hint} error={error}>{control => <Input {...control} value={value} onChange={event => onChange(event.target.value)} />}</ConfigField></div></details>
 }
 
-function FieldRow({ input, field, locked, error }: { input: SignatureInputDraft; field: SignatureFieldDraft; locked: boolean; error(path: string): string | undefined }) {
+function FieldRow({ input, inputIndex, fieldIndex, field, locked, error }: { input: SignatureInputDraft; inputIndex: number; fieldIndex: number; field: SignatureFieldDraft; locked: boolean; error(path: string): string | undefined }) {
   const store = useSignatureStore.getState
-  const patch = (change: Partial<SignatureFieldDraft>) => store().updateField(input.key, field.key, change)
+  const patch = (change: Partial<SignatureFieldDraft>) => store().updateFieldAt(inputIndex, fieldIndex, change)
   const otherKeys = input.fields.filter(item => item !== field).map(item => item.key)
   return <div role="group" aria-label={`字段 ${field.name}`} className="space-y-2 rounded-control border p-3">
     <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto_auto_auto] items-start gap-3">
       <ConfigField label="中文名">{control =>
         <Input {...control} value={field.name} onChange={event => patch({ name: event.target.value })}
-          onBlur={() => { if (!locked && AUTO_KEY.test(field.key) && field.name.trim()) patch({ key: suggestKey(field.name, otherKeys) }) }} />}</ConfigField>
+          onBlur={() => { if (!locked && !field.keyEdited && AUTO_KEY.test(field.key) && field.name.trim()) patch({ key: suggestKey(field.name, otherKeys), keyEdited: false }) }} />}</ConfigField>
       <ConfigField label="类型" error={error('type')}>{control =>
         <select {...control} className={selectClass} value={field.type} onChange={event => patch({ type: event.target.value, sample: undefined })}>
           {SIGNATURE_FIELD_TYPES.map(type => <option key={type} value={type}>{SIGNATURE_TYPE_LABELS[type]}</option>)}</select>}</ConfigField>
       <label className="mt-6 flex items-center gap-1 text-[13px]"><input type="checkbox" checked={field.required} onChange={event => patch({ required: event.target.checked })} />必填</label>
       <label className="mt-6 flex items-center gap-1 text-[13px]"><input type="checkbox" checked={field.sensitive} onChange={event => patch({ sensitive: event.target.checked })} />敏感</label>
-      <Button className="mt-5" size="sm" variant="ghost" aria-label={`删除字段 ${field.name}`} onClick={() => store().removeField(input.key, field.key)}><Trash2 className="h-3.5 w-3.5" /></Button>
+      <Button className="mt-5" size="sm" variant="ghost" aria-label={`删除字段 ${field.name}`} onClick={() => store().removeFieldAt(inputIndex, fieldIndex)}><Trash2 className="h-3.5 w-3.5" /></Button>
     </div>
     <ConfigField label="样例值" hint={field.sensitive ? '敏感字段不保存样例' : '试跑和预览时用来演示，不会当作真实数据。'} error={error('sample')}>{control =>
       <SampleInput control={control} field={field} onChange={sample => patch({ sample })} />}</ConfigField>

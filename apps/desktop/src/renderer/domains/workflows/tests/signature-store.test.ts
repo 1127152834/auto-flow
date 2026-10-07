@@ -29,13 +29,13 @@ describe('signature store', () => {
   it('an invalid draft stays unsaved after a document save instead of looking saved', () => {
     sig().load(structuredClone(RAW))
     sig().addInput({ key: 'order', name: '订单' })
-    sig().addField('order', { key: 'no', name: '单号', type: 'string' })
-    sig().addField('order', { key: 'no', name: '重复', type: 'string' })
+    sig().addFieldAt(1, { key: 'no', name: '单号', type: 'string' })
+    sig().addFieldAt(1, { key: 'no', name: '重复', type: 'string' })
     expect(sig().canSave).toBe(false)
     expect(sig().serialize()).toBeUndefined()
     sig().markSaved()
     expect(sig().dirty).toBe(true)
-    sig().removeField('order', 'no')
+    sig().removeFieldAt(1, 0)
     expect(sig().canSave).toBe(true)
     sig().markSaved()
     expect(sig().dirty).toBe(false)
@@ -44,32 +44,59 @@ describe('signature store', () => {
   it('adds, edits and removes inputs and fields, tracking dirty', () => {
     sig().load(structuredClone(RAW))
     sig().addInput({ key: 'order', name: '订单' })
-    sig().addField('order', { key: 'no', name: '单号', type: 'string' })
-    sig().updateField('order', 'no', { name: '订单号', required: true, sample: 'A1' })
+    sig().addFieldAt(1, { key: 'no', name: '单号', type: 'string' })
+    sig().updateFieldAt(1, 0, { name: '订单号', required: true, sample: 'A1' })
     expect(sig().dirty).toBe(true)
     const order = sig().inputs.find(i => i.key === 'order')!
     expect(order.fields[0]).toMatchObject({ name: '订单号', required: true, sample: 'A1' })
-    sig().removeField('order', 'no')
-    sig().removeInput('order')
+    sig().removeFieldAt(1, 0)
+    sig().removeInputAt(1)
     expect(sig().inputs.map(i => i.key)).toEqual(['account'])
+  })
+
+  it('edits and removes the item at the position even when two share a key', () => {
+    sig().load(structuredClone(RAW))
+    sig().updateFieldAt(0, 1, { key: 'user' })
+    expect(sig().canSave).toBe(false)
+    sig().updateFieldAt(0, 1, { name: '第二个' })
+    expect(sig().inputs[0].fields.map(f => f.name)).toEqual(['用户名', '第二个'])
+    sig().removeFieldAt(0, 1)
+    expect(sig().inputs[0].fields.map(f => f.name)).toEqual(['用户名'])
+    expect(sig().canSave).toBe(true)
+  })
+
+  it('removes the second of two groups with the same key', () => {
+    sig().load(structuredClone(RAW))
+    sig().addInput({ key: 'account', name: '副本' })
+    sig().updateInputAt(1, { name: '副本2' })
+    expect(sig().inputs.map(i => i.name)).toEqual(['账号', '副本2'])
+    sig().removeInputAt(1)
+    expect(sig().inputs.map(i => i.name)).toEqual(['账号'])
+  })
+
+  it('remembers a hand-edited key without writing the flag into the document', () => {
+    sig().load(structuredClone(RAW))
+    sig().updateFieldAt(0, 0, { key: 'field7' })
+    expect(sig().inputs[0].fields[0].keyEdited).toBe(true)
+    expect(JSON.stringify(sig().serialize())).not.toContain('keyEdited')
   })
 
   it('does not become dirty when an edit changes nothing', () => {
     sig().load(structuredClone(RAW))
-    sig().updateField('account', 'user', { name: '用户名' })
+    sig().updateFieldAt(0, 0, { name: '用户名' })
     expect(sig().dirty).toBe(false)
   })
 
   it('drops the sample when a field becomes sensitive', () => {
     sig().load(structuredClone(RAW))
-    sig().updateField('account', 'user', { sensitive: true })
+    sig().updateFieldAt(0, 0, { sensitive: true })
     expect(sig().inputs[0].fields[0].sample).toBeUndefined()
     expect(sig().issues).toEqual([])
   })
 
   it('serializes edits back while keeping unknown keys', () => {
     sig().load(structuredClone(RAW))
-    sig().updateField('account', 'user', { name: '登录名', sample: undefined })
+    sig().updateFieldAt(0, 0, { name: '登录名', sample: undefined })
     const out = sig().serialize() as { outputs: unknown; inputs: { extraInput: unknown; fields: unknown[] }[] }
     expect(out.outputs).toEqual([{ key: 'ok' }])
     expect(out.inputs[0].extraInput).toBe(1)
@@ -102,7 +129,7 @@ describe('signature store', () => {
 
   it('refuses to save an invalid signature', () => {
     sig().load(structuredClone(RAW))
-    sig().addField('account', { key: 'user', name: '重复', type: 'string' })
+    sig().addFieldAt(0, { key: 'user', name: '重复', type: 'string' })
     expect(sig().issues.length).toBeGreaterThan(0)
     expect(sig().serialize()).toBeUndefined()
     expect(sig().canSave).toBe(false)
@@ -140,7 +167,7 @@ describe('editor store wiring', () => {
     useWorkflowStore.getState().importWorkflow(workflow({ signature: structuredClone(RAW) }))
     expect(sig().inputs[0].key).toBe('account')
     expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(false)
-    sig().updateField('account', 'user', { name: '登录名' })
+    sig().updateFieldAt(0, 0, { name: '登录名' })
     expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
     const doc = JSON.parse(useWorkflowStore.getState().exportWorkflow())
     expect(doc.signature.inputs[0].fields[0].name).toBe('登录名')

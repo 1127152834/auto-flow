@@ -25,11 +25,12 @@ interface SignatureState {
   markSaved(): void
   refreshIssues(workflowId: string, fetchIssues: IssueFetcher): Promise<void>
   addInput(input: { key: string; name: string }): void
-  updateInput(key: string, patch: Partial<Pick<SignatureInputDraft, 'key' | 'name'>>): void
-  removeInput(key: string): void
-  addField(inputKey: string, field: FieldInit): void
-  updateField(inputKey: string, fieldKey: string, patch: FieldPatch): void
-  removeField(inputKey: string, fieldKey: string): void
+  // Edits address items by position: keys may be duplicated mid-edit, so they cannot identify an item.
+  updateInputAt(index: number, patch: Partial<Pick<SignatureInputDraft, 'key' | 'name' | 'keyEdited'>>): void
+  removeInputAt(index: number): void
+  addFieldAt(inputIndex: number, field: FieldInit): void
+  updateFieldAt(inputIndex: number, fieldIndex: number, patch: FieldPatch): void
+  removeFieldAt(inputIndex: number, fieldIndex: number): void
   /** The signature to write into the document, or undefined to leave the stored one alone. */
   serialize(): Record<string, unknown> | undefined
 }
@@ -45,7 +46,9 @@ export const useSignatureStore = create<SignatureState>((set, get) => {
     const issues = validateSignature(inputs)
     set({ inputs, issues, dirty: snapshot(inputs, state.rest) !== state.baseline, canSave: issues.length === 0 })
   }
-  const withInput = (key: string, change: (input: SignatureInputDraft) => SignatureInputDraft) => edit(inputs => inputs.map(input => input.key === key ? change(input) : input))
+  const withInput = (index: number, change: (input: SignatureInputDraft) => SignatureInputDraft) => edit(inputs => inputs.map((input, at) => at === index ? change(input) : input))
+  // A key typed by hand must never be regenerated from the name later.
+  const handKey = <T extends { keyEdited?: boolean }>(patch: T): T => patch.keyEdited === undefined && 'key' in patch ? { ...patch, keyEdited: true } : patch
   return {
     ...empty,
     epoch: 0,
@@ -67,15 +70,15 @@ export const useSignatureStore = create<SignatureState>((set, get) => {
       set(state => ({ serverIssues, readOnly: state.loadIssues.length > 0 || serverIssues.length > 0 }))
     },
     addInput: ({ key, name }) => edit(inputs => [...inputs, { key, name, fields: [], rest: {} }]),
-    updateInput: (key, patch) => withInput(key, input => ({ ...input, ...patch })),
-    removeInput: key => edit(inputs => inputs.filter(input => input.key !== key)),
-    addField: (inputKey, field) => withInput(inputKey, input => ({
+    updateInputAt: (index, patch) => withInput(index, input => ({ ...input, ...handKey(patch) })),
+    removeInputAt: index => edit(inputs => inputs.filter((_, at) => at !== index)),
+    addFieldAt: (inputIndex, field) => withInput(inputIndex, input => ({
       ...input, fields: [...input.fields, { required: false, sensitive: false, ...field, ...(field.sensitive ? { sample: undefined } : {}), rest: {} }],
     })),
-    updateField: (inputKey, fieldKey, patch) => withInput(inputKey, input => ({
-      ...input, fields: input.fields.map(field => field.key === fieldKey ? { ...field, ...patch, ...(patch.sensitive ? { sample: undefined } : {}) } : field),
+    updateFieldAt: (inputIndex, fieldIndex, patch) => withInput(inputIndex, input => ({
+      ...input, fields: input.fields.map((field, at) => at === fieldIndex ? { ...field, ...handKey(patch), ...(patch.sensitive ? { sample: undefined } : {}) } : field),
     })),
-    removeField: (inputKey, fieldKey) => withInput(inputKey, input => ({ ...input, fields: input.fields.filter(field => field.key !== fieldKey) })),
+    removeFieldAt: (inputIndex, fieldIndex) => withInput(inputIndex, input => ({ ...input, fields: input.fields.filter((_, at) => at !== fieldIndex) })),
     serialize() {
       const { dirty, readOnly, canSave, inputs, rest } = get()
       return dirty && !readOnly && canSave ? serializeSignature(inputs, rest) : undefined

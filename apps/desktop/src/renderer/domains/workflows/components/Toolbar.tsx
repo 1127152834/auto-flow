@@ -923,6 +923,7 @@ export function Toolbar() {
 
         currentWorkflowId = createResult.data.id
         setWorkflowId(currentWorkflowId)
+        signatureCheck.markSaved()
       } else {
         // 更新现有工作流
         const updateResult = await workflowApi.update(currentWorkflowId, {
@@ -953,6 +954,7 @@ export function Toolbar() {
           addLog({ level: 'error', message: `更新工作流失败: ${updateResult.error}` })
           return
         }
+        signatureCheck.markSaved()
       }
 
       // 调用导出 API
@@ -1009,12 +1011,14 @@ export function Toolbar() {
         }
         currentWorkflowId = createResult.data.id
         setWorkflowId(currentWorkflowId)
+        signatureCheck.markSaved()
       } else {
         const updateResult = await workflowApi.update(currentWorkflowId, payload)
         if (updateResult.error) {
           addLog({ level: 'error', message: `更新工作流失败: ${updateResult.error}` })
           return
         }
+        signatureCheck.markSaved()
       }
       const res = await workflowApi.exportScript(currentWorkflowId!, target)
       const data = res.data

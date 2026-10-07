@@ -31,7 +31,7 @@ beforeEach(() => {
 })
 afterEach(() => { cleanup(); setStudioTransport(mockRequest); history.replaceState(null, '', '/') })
 
-const invalidate = () => useSignatureStore.getState().updateField('account', 'phone', { key: '1bad' })
+const invalidate = () => useSignatureStore.getState().updateFieldAt(0, 0, { key: '1bad' })
 
 describe('签名保存守卫', () => {
   it('refuses to save an invalid signature draft and keeps it unsaved', async () => {
@@ -45,7 +45,7 @@ describe('签名保存守卫', () => {
   })
 
   it('saves an edited valid signature with the document and marks it saved', async () => {
-    useSignatureStore.getState().updateField('account', 'phone', { name: '电话' })
+    useSignatureStore.getState().updateFieldAt(0, 0, { name: '电话' })
     render(<Toolbar />)
     fireEvent.click(screen.getByRole('button', { name: '保存' }))
     await waitFor(() => expect(writes).toHaveLength(1))
@@ -56,13 +56,24 @@ describe('签名保存守卫', () => {
   it.each([['playwright'], ['selenium']])('updates the stored workflow with the edited signature before exporting (%s)', async format => {
     useWorkflowStore.setState({ id: 'wf-1', nodes: [{ id: 'n1', type: 'moduleNode', position: { x: 0, y: 0 }, data: { moduleType: 'click_element', label: '点击' } }] as never })
     history.replaceState(null, '', '/?workflowId=wf-1')
-    useSignatureStore.getState().updateField('account', 'phone', { name: '电话' })
+    useSignatureStore.getState().updateFieldAt(0, 0, { name: '电话' })
     render(<Toolbar />)
     fireEvent.click(screen.getByRole('button', { name: '导出' }))
     if (format === 'selenium') fireEvent.click(await screen.findByText('Selenium Python'))
     fireEvent.click(await screen.findByRole('button', { name: '立即导出' }))
     await waitFor(() => expect(writes.some(write => write.method === 'PUT')).toBe(true))
     expect(writes.find(write => write.method === 'PUT')!.body.signature).toMatchObject({ inputs: [{ fields: [{ name: '电话' }] }] })
+  })
+
+  it.each([['update', 'wf-1'], ['create', '']])('marks the signature saved after the export-save succeeds (%s)', async (_kind, id) => {
+    useWorkflowStore.setState({ id, nodes: [{ id: 'n1', type: 'moduleNode', position: { x: 0, y: 0 }, data: { moduleType: 'click_element', label: '点击' } }] as never })
+    if (id) history.replaceState(null, '', '/?workflowId=wf-1')
+    useSignatureStore.getState().updateFieldAt(0, 0, { name: '电话' })
+    render(<Toolbar />)
+    fireEvent.click(screen.getByRole('button', { name: '导出' }))
+    fireEvent.click(await screen.findByRole('button', { name: '立即导出' }))
+    await waitFor(() => expect(writes.length).toBeGreaterThan(0))
+    await waitFor(() => expect(useSignatureStore.getState().dirty).toBe(false))
   })
 
   it('does not export-save when the signature draft is invalid', async () => {

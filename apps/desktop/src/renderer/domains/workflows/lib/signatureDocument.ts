@@ -9,6 +9,8 @@ export interface SignatureFieldDraft {
   required: boolean
   sensitive: boolean
   sample?: SignatureSample
+  /** The key was typed by hand, so it is never regenerated from the name. Draft-only; not written to the document. */
+  keyEdited?: boolean
   /** Keys this editor does not know; written back untouched. */
   rest: Record<string, unknown>
 }
@@ -16,6 +18,8 @@ export interface SignatureInputDraft {
   key: string
   name: string
   fields: SignatureFieldDraft[]
+  /** Draft-only; see SignatureFieldDraft.keyEdited. */
+  keyEdited?: boolean
   rest: Record<string, unknown>
 }
 export interface SignatureIssue { path: string; message: string }
@@ -87,7 +91,7 @@ export function serializeSignature(inputs: SignatureInputDraft[], rest: Record<s
     ...rest,
     inputs: inputs.map(input => ({
       ...input.rest, key: input.key, name: input.name,
-      fields: input.fields.map(({ rest: extra, sample, ...field }) => ({ ...extra, ...field, ...(sample !== undefined ? { sample } : {}) })),
+      fields: input.fields.map(({ rest: extra, sample, keyEdited: _hand, ...field }) => ({ ...extra, ...field, ...(sample !== undefined ? { sample } : {}) })),
     })),
   }
 }

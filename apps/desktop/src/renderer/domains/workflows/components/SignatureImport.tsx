@@ -8,8 +8,10 @@ import { SIGNATURE_TYPE_LABELS } from './signatureTypes'
 
 type Schema = components['schemas']
 export interface ImportGroup { key: string; name: string; fieldKeys: string[] }
-export type ImportTarget = { groupKey: string } | { newName: string }
+export type ImportTarget = { groupIndex: number } | { newName: string }
 const NEW_GROUP = '__new__'
+const PAGE_SIZE = 100
+const MAX_PAGES = 50
 const root = (projectId: string) => `/v1/projects/${encodeURIComponent(projectId)}`
 
 /** Pick fields from a project data table to turn into flow inputs; only offered inside a project. */
@@ -18,19 +20,26 @@ export function SignatureImport({ groups, disabled, onApply }: { groups: ImportG
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('')
   const [tables, setTables] = useState<Schema['DataTableView'][]>([]), [tableId, setTableId] = useState('')
   const [fields, setFields] = useState<Schema['DataFieldView'][] | null>(null)
-  const [target, setTarget] = useState(groups[0]?.key ?? NEW_GROUP), [picked, setPicked] = useState<Set<string>>(new Set())
+  const [chosenTarget, setTarget] = useState('0'), [picked, setPicked] = useState<Set<string>>(new Set())
   if (!projectId) return null
+  // Groups can be deleted while this is open; fall back to the first one (or a new group) instead of pointing at nothing.
+  const target = chosenTarget === NEW_GROUP || groups[Number(chosenTarget)] ? chosenTarget : groups.length ? '0' : NEW_GROUP
   const table = tables.find(item => item.tableId === tableId)
-  const existing = target === NEW_GROUP ? [] : groups.find(group => group.key === target)?.fieldKeys ?? []
+  const existing = target === NEW_GROUP ? [] : groups[Number(target)]?.fieldKeys ?? []
   const candidates = fields ? importCandidates(fields, existing) : []
   const fail = (what: string, cause: unknown) => setError(`${what}：${cause instanceof Error ? cause.message : String(cause)}。请检查项目是否可访问后重试。`)
 
   const start = async () => {
     setOpen(true); setError(''); setBusy(true)
     try {
-      const result = await apiRequest<Schema['DataTablePage']>(`${root(projectId)}/tables?pageSize=100&page=1`)
-      if (!result.success || !result.data) throw new Error(result.error || '服务没有返回数据表')
-      setTables(result.data.items)
+      const items: Schema['DataTableView'][] = []
+      for (let page = 1; page <= MAX_PAGES; page++) {
+        const result = await apiRequest<Schema['DataTablePage']>(`${root(projectId)}/tables?pageSize=${PAGE_SIZE}&page=${page}`)
+        if (!result.success || !result.data) throw new Error(result.error || '服务没有返回数据表')
+        items.push(...result.data.items)
+        if (!result.data.items.length || items.length >= result.data.total) break
+      }
+      setTables(items)
     } catch (cause) { fail('读取数据表失败', cause) } finally { setBusy(false) }
   }
   const choose = async (id: string) => {
@@ -47,7 +56,7 @@ export function SignatureImport({ groups, disabled, onApply }: { groups: ImportG
   const apply = () => {
     const chosen = candidates.filter((item, index) => !item.exists && picked.has(fields![index].key))
     if (!chosen.length) return
-    onApply(target === NEW_GROUP ? { newName: table?.name ?? '新分组' } : { groupKey: target }, chosen)
+    onApply(target === NEW_GROUP ? { newName: table?.name ?? '新分组' } : { groupIndex: Number(target) }, chosen)
     setOpen(false); setFields(null); setTableId(''); setPicked(new Set())
   }
   if (!open) return <Button size="sm" variant="outline" disabled={disabled} onClick={() => void start()}>从数据表导入</Button>
@@ -57,7 +66,7 @@ export function SignatureImport({ groups, disabled, onApply }: { groups: ImportG
     {error && <p role="alert" className="text-xs text-danger">{error}</p>}
     <div className="grid grid-cols-2 gap-3">
       <label className="space-y-1 text-xs font-medium">数据表<select className={select} value={tableId} disabled={busy} onChange={event => void choose(event.target.value)}><option value="">请选择数据表</option>{tables.map(item => <option key={item.tableId} value={item.tableId}>{item.name}</option>)}</select></label>
-      <label className="space-y-1 text-xs font-medium">导入到分组<select className={select} value={target} onChange={event => setTarget(event.target.value)}>{groups.map(group => <option key={group.key} value={group.key}>{group.name}</option>)}<option value={NEW_GROUP}>新建分组（用数据表名称）</option></select></label>
+      <label className="space-y-1 text-xs font-medium">导入到分组<select className={select} value={target} onChange={event => setTarget(event.target.value)}>{groups.map((group, index) => <option key={index} value={String(index)}>{group.name}</option>)}<option value={NEW_GROUP}>新建分组（用数据表名称）</option></select></label>
     </div>
     {busy && <p role="status" className="text-xs text-muted-foreground">正在读取…</p>}
     {fields && (candidates.length ? <ul aria-label="可导入的字段" className="space-y-1">{candidates.map((item, index) => {
