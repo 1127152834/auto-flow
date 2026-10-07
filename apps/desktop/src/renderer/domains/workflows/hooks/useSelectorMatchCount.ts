@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { elementPickerApi } from '../api'
 
 export type SelectorMatchState =
-  | { status: 'idle' | 'checking' | 'disabled' | 'noBrowser' }
+  | { status: 'idle' | 'checking' | 'disabled' | 'noBrowser' | 'hasVariable' }
   | { status: 'ok'; count: number }
   | { status: 'error'; error: string }
 
 export const SELECTOR_MATCH_DEBOUNCE_MS = 500
 const NO_BROWSER = /浏览器未(打开|连接|启动)/
+// {变量名} 或 {{变量名}}：运行时才有值，按字面量去页面里查没有意义
+const HAS_VARIABLE = /\{[^{}]+\}/
 
 /** 选择器匹配数：防抖、单飞（新请求作废旧结果）、运行中暂停、不自动启动浏览器。 */
 export function useSelectorMatchCount(selector: string, hints: Record<string, unknown> | undefined, enabled: boolean): SelectorMatchState {
@@ -15,8 +17,9 @@ export function useSelectorMatchCount(selector: string, hints: Record<string, un
   const hintsKey = JSON.stringify(hints ?? null)
 
   useEffect(() => {
-    if (!enabled) { setState({ status: 'disabled' }); return }
     if (!selector.trim()) { setState({ status: 'idle' }); return }
+    if (!enabled) { setState({ status: 'disabled' }); return }
+    if (HAS_VARIABLE.test(selector)) { setState({ status: 'hasVariable' }); return }
     let current = true
     setState({ status: 'checking' })
     const timer = setTimeout(async () => {

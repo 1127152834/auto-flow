@@ -56,6 +56,21 @@ describe('useSelectorMatchCount', () => {
     expect(spy).not.toHaveBeenCalled()
   })
 
+  it('选择器为空时即使暂停也保持 idle，不显示"运行中不检查"', async () => {
+    const { result } = renderHook(() => useSelectorMatchCount('', undefined, false))
+    await flush(1000)
+    expect(result.current.status).toBe('idle')
+  })
+
+  it('选择器含变量时不请求，返回 hasVariable', async () => {
+    for (const selector of ['#row-{序号}', 'a[href="{{链接}}"]']) {
+      const { result } = renderHook(() => useSelectorMatchCount(selector, undefined, true))
+      await flush(1000)
+      expect(result.current.status).toBe('hasVariable')
+    }
+    expect(spy).not.toHaveBeenCalled()
+  })
+
   it('浏览器未打开返回 noBrowser，其他失败返回 error 与原因', async () => {
     spy.mockResolvedValueOnce({ success: false, error: '浏览器未打开，请先打开页面' } as never)
     const { result, rerender } = renderHook(({ s }) => useSelectorMatchCount(s, undefined, true), { initialProps: { s: '#a' } })

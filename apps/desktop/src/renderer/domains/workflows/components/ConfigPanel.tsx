@@ -10,7 +10,7 @@ import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { ScrollArea } from './controls/scroll-area'
 import { useRequiredFields, getMissingRequiredLabels } from '../lib/requiredFields'
 import { useNodeIssues } from '../lib/nodeIssues'
-import { ADVANCED_FIELDS, type ConfigSection } from '../lib/configSections'
+import { ADVANCED_FIELDS, COMMON_ADVANCED, type ConfigSection } from '../lib/configSections'
 import { SelectorMatchHint } from './config-panels/SelectorMatchHint'
 import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { Input } from './controls/input'
@@ -267,6 +267,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const [pickingField, setPickingField] = useState<string | null>(null)
   const [testingField, setTestingField] = useState<string | null>(null)
   const selectorTestSequence = useRef(0)
+  const panelRef = useRef<HTMLElement>(null)
   const pickerSequence = useRef(0)
   const pickerActive = useRef(false)
   const pickerConnection = useRef<number | null>(null)
@@ -808,10 +809,11 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   }
 
   const isPilot = Object.hasOwn(ADVANCED_FIELDS, String(nodeData.moduleType))
-  const advancedHasError = (ADVANCED_FIELDS[String(nodeData.moduleType)] ?? []).some((key) => key in fieldErrors)
+  const advancedHasError = [...(ADVANCED_FIELDS[String(nodeData.moduleType)] ?? []), ...COMMON_ADVANCED].some((key) => key in fieldErrors)
   const jumpToField = (field: string | undefined) => {
     if (!field) return
-    const host = document.querySelector(`[data-config-field="${field}"]`) ?? document.getElementById(field)
+    const scope: ParentNode = panelRef.current ?? document
+    const host = scope.querySelector(`[data-config-field="${field}"]`) ?? scope.querySelector(`#${CSS.escape(field)}`)
     const control = host?.querySelector<HTMLElement>('input, textarea, select, [role="combobox"], [role="checkbox"]')
       ?? (host instanceof HTMLElement && host.matches('input, textarea, select, button') ? host : host?.querySelector<HTMLElement>('button'))
     control?.focus()
@@ -1526,6 +1528,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       )}
       
       <aside
+        ref={panelRef}
         className="relative border-l border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col"
         style={{
           width: isCollapsed ? 48 : effectiveRightWidth,

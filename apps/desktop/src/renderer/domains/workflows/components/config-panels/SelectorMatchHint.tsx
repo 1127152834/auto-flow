@@ -10,6 +10,7 @@ export function SelectorMatchHint({ selector, hints, running }: Props) {
     checking: '正在检查匹配数…',
     disabled: '运行中不检查',
     noBrowser: '未连接浏览器',
+    hasVariable: '选择器含变量，运行时才能确定匹配数',
     error: '检查失败，可点击测试重试',
     ok: state.status === 'ok' ? `当前页面匹配 ${state.count} 个元素` : '',
   }[state.status]
