@@ -19,12 +19,17 @@ export function validatePreferences(value: unknown): UiPreferences {
 
 export const MOTION_MODES = ['full', 'reduce', 'off']
 
+// A failing platform query must not make a valid settings file look corrupt.
+function systemPrefersReducedMotion(query: () => boolean): boolean {
+  try { return query() } catch { return false }
+}
+
 function readSettings(path: string, prefersReducedMotion: () => boolean = () => false): { settings: StoredSettings; migrated: boolean } {
   if (lstatSync(path).isSymbolicLink() || lstatSync(path).size > 65_536) throw new Error('Invalid settings file')
   const value = JSON.parse(readFileSync(path, 'utf8')) as StoredSettings
   if (value.schemaVersion !== 1 || typeof value.currentPath !== 'string' || !value.currentPath || resolve(value.currentPath) !== value.currentPath || (value.previousPath !== null && (typeof value.previousPath !== 'string' || resolve(value.previousPath) !== value.previousPath))) throw new Error('Invalid settings schema')
   const raw = (value.preferences ?? {}) as unknown as Record<string, unknown>
-  const motion = raw.motion === 'system' ? (prefersReducedMotion() ? 'reduce' : 'full') : MOTION_MODES.includes(String(raw.motion)) ? raw.motion : 'full'
+  const motion = raw.motion === 'system' ? (systemPrefersReducedMotion(prefersReducedMotion) ? 'reduce' : 'full') : MOTION_MODES.includes(String(raw.motion)) ? raw.motion : 'full'
   return { settings: { schemaVersion: 1, currentPath: value.currentPath, previousPath: value.previousPath, preferences: validatePreferences({ ...raw, motion }) }, migrated: motion !== raw.motion }
 }
 
@@ -85,7 +90,7 @@ export class DesktopSettingsStore {
   constructor(readonly userData: string, private readonly prefersReducedMotion: () => boolean = () => false) { mkdirSync(userData, { recursive: true }); this.path = join(userData, 'desktop-settings.json') }
 
   load(): { settings: StoredSettings; recovery: string | null; needsSelection: boolean } {
-    const defaults: StoredSettings = { schemaVersion: 1, currentPath: realpathSync(this.userData), previousPath: null, preferences: { ...DEFAULT_PREFERENCES } }
+    const defaults: StoredSettings = { schemaVersion: 1, currentPath: realpathSync(this.userData), previousPath: null, preferences: { ...DEFAULT_PREFERENCES, motion: systemPrefersReducedMotion(this.prefersReducedMotion) ? 'reduce' : 'full' } }
     if (!existsSync(this.path) && !existsSync(`${this.path}.bak`)) {
       // The OS-provided baseline root is already owned by this app; adopt it in place.
       if (existsSync(join(this.userData, '.autoflow-rebuild-workspace'))) return { settings: defaults, recovery: '检测到旧版工作区，请重新选择本版工作区或空目录', needsSelection: true }

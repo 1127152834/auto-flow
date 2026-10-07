@@ -33,9 +33,15 @@ describe('data-motion CSS contract', () => {
     expect(rule(mode, '.animate-spin')).toContain('animation: none !important')
   })
 
-  it('every infinite animation in webrpa.css is covered by a suppression selector', () => {
-    const covered = ['.animate-pulse-ring', '.animate-soft-float', '.animate-spin-smooth', '.skeleton', '.skeleton-wave', '.status-dot-running', '.progress-indeterminate::after', '.spinner', '.webrpa-logo-letter-w', '.webrpa-logo-letter-e', '.webrpa-logo-letter-b', '.webrpa-logo-r-pill']
+  it('every infinite animation in webrpa.css is covered by a suppression selector in index.css', () => {
+    const suppressed = (mode: string) => new Set(
+      [...index.matchAll(new RegExp(String.raw`:root\[data-motion="${mode}"\] ([^,{]+)`, 'g'))].map(m => m[1].trim()),
+    )
     const infinite = [...webrpa.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{[^{}]*infinite[^{}]*\}/g)].flatMap(m => m[1].split(',').map(s => s.trim()).filter(Boolean))
-    for (const selector of infinite) expect(covered, selector).toContain(selector)
+    expect(infinite.length).toBeGreaterThan(0)
+    for (const mode of ['reduce', 'off']) {
+      const covered = suppressed(mode)
+      for (const selector of infinite) expect(covered.has(selector), `${mode}: ${selector}`).toBe(true)
+    }
   })
 })

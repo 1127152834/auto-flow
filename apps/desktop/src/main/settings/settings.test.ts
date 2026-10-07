@@ -95,6 +95,20 @@ describe('desktop settings storage', () => {
     expect(JSON.parse(readFileSync(join(root, 'desktop-settings.json'), 'utf8')).preferences.motion).toBe(expected)
   })
 
+  it('a failing system motion query migrates to full instead of treating the file as corrupt', () => {
+    const root = temporary('motion-query-throws')
+    const initial = new DesktopSettingsStore(root).load().settings
+    writeFileSync(join(root, 'desktop-settings.json'), JSON.stringify({ ...initial, preferences: { zoom: 110, motion: 'system' } }))
+    const loaded = new DesktopSettingsStore(root, () => { throw new Error('unavailable') }).load()
+    expect(loaded.recovery).toBeNull()
+    expect(loaded.settings.preferences).toEqual({ zoom: 110, motion: 'full' })
+  })
+
+  it.each([[true, 'reduce'], [false, 'full']])('a fresh install follows the system reduced-motion setting (%s -> %s)', (reduced, expected) => {
+    const loaded = new DesktopSettingsStore(temporary('motion-fresh'), () => reduced).load()
+    expect(loaded.settings.preferences.motion).toBe(expected)
+  })
+
   it('rejects unsupported motion values from the settings UI', () => {
     expect(() => validatePreferences({ zoom: 100, motion: 'system' })).toThrow()
     expect(validatePreferences({ zoom: 100, motion: 'off' })).toEqual({ zoom: 100, motion: 'off' })
