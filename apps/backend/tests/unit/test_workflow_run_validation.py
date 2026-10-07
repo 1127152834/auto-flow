@@ -585,3 +585,23 @@ def test_reading_the_table_structure_stays_available():
         'moduleType': 'project_data', 'operation': 'queryTableSchema', 'arguments': {'tableId': 't', 'datasetGeneration': 'g', 'fieldIds': ['f']}, 'variableName': 'x', 'bindingProjectId': 'p', 'tableGrant': grant}}]
     payload['content']['edges'] = []
     assert prepare_run(payload).node_ids == ['schema']
+
+
+def test_project_graph_cycle_reports_no_start_node_with_a_business_message():
+    payload = workflow_payload()
+    payload["content"]["schemaVersion"] = 3
+    payload["content"]["nodes"] = [
+        {
+            "id": name, "type": "set_variable", "position": {"x": index, "y": 0},
+            "data": {"moduleType": "set_variable", "config": {"variableName": name, "variableValue": "1"}},
+        }
+        for index, name in enumerate(("a", "b"))
+    ]
+    payload["content"]["edges"] = [
+        {"id": "ab", "source": "a", "target": "b"},
+        {"id": "ba", "source": "b", "target": "a"},
+    ]
+    with pytest.raises(WorkflowError) as caught:
+        prepare_run(payload)
+    issues = {i["code"]: i["message"] for i in caught.value.details["issues"]}
+    assert "没有可以开始的节点" in issues["NO_START_NODE"]

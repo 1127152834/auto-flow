@@ -12,11 +12,19 @@ import { getNodeConfigData, moduleTypeLabels, patchNodeConfigData, type NodeData
 import { getModuleAllDefaultVars, getModuleConfigDefaults } from '../lib/moduleDefaultVars'
 import type { ModuleType } from '../types/index'
 
+/** onError：该节点出错时（sourceHandle==='error'）走的处理链，只在存在错误边时才有该字段 */
 export type Block =
-  | { kind: 'step'; id: string; node: Node<NodeData>; flowStart?: boolean }
-  | { kind: 'if'; id: string; node: Node<NodeData>; then: Block[]; els: Block[]; flowStart?: boolean }
-  | { kind: 'loop'; id: string; node: Node<NodeData>; body: Block[]; flowStart?: boolean }
-  | { kind: 'parallel'; id: string; node: Node<NodeData>; branches: Block[][]; flowStart?: boolean }
+  | { kind: 'step'; id: string; node: Node<NodeData>; onError?: Block[]; flowStart?: boolean }
+  | { kind: 'if'; id: string; node: Node<NodeData>; then: Block[]; els: Block[]; onError?: Block[]; flowStart?: boolean }
+  | { kind: 'loop'; id: string; node: Node<NodeData>; body: Block[]; onError?: Block[]; flowStart?: boolean }
+  | { kind: 'parallel'; id: string; node: Node<NodeData>; branches: Block[][]; onError?: Block[]; flowStart?: boolean }
+
+/** 一个块下面的所有子序列（分支/循环体/并行分支/错误处理链） */
+function childSeqs(b: Block): Block[][] {
+  const seqs: Block[][] =
+    b.kind === 'if' ? [b.then, b.els] : b.kind === 'loop' ? [b.body] : b.kind === 'parallel' ? b.branches : []
+  return b.onError ? [...seqs, b.onError] : seqs
+}
 
 export const CONDITION_TYPES = new Set([
   'condition', 'element_exists', 'element_visible',
@@ -37,6 +45,30 @@ function edgeTarget(edges: Edge[], source: string, handle: string | null): strin
   }
   const e = edges.find((x) => x.source === source && x.sourceHandle === handle)
   return e ? e.target : null
+}
+
+/**
+ * 预检：没有任何可以开始的节点（每个节点都被别的节点以普通连线指向）。
+ * 规则与后端一致：错误边不计入普通入边；只被错误边指向的节点与孤立节点都可作为起点。
+ */
+export function findEntryProblem(
+  nodes: Node<NodeData>[],
+  edges: Edge[],
+): { code: 'NO_START_NODE'; message: string } | null {
+  const moduleIds = new Set(nodes.filter((n) => n.type === 'moduleNode').map((n) => n.id))
+  if (moduleIds.size === 0) return null
+  const visualIds = new Set(nodes.filter((n) => n.type !== 'moduleNode').map((n) => n.id))
+  const hasNormalIncoming = new Set<string>()
+  for (const e of edges) {
+    if (visualIds.has(e.source) || visualIds.has(e.target) || e.sourceHandle === 'error') continue
+    hasNormalIncoming.add(e.target)
+  }
+  const hasStart = [...moduleIds].some((id) => !hasNormalIncoming.has(id))
+  if (hasStart) return null
+  return {
+    code: 'NO_START_NODE',
+    message: '流程里没有可以开始的节点：每个节点都被别的节点指向，请指定一个起点',
+  }
 }
 
 /** 图 → 结构树 */
@@ -102,6 +134,16 @@ export function parseGraphToBlocks(nodes: Node<NodeData>[], edges: Edge[]): Bloc
     return null
   }
 
+  // 错误处理链：不得吞并主流程的后续节点（followIds 作为停止点），解析后不再接回主流程
+  const parseOnError = (id: string, stop: Set<string>, followIds: (string | null)[]): { onError?: Block[] } => {
+    const target = edgeTarget(edges, id, 'error')
+    if (!target) return {}
+    const errStop = new Set(stop)
+    for (const f of followIds) if (f) errStop.add(f)
+    const seq = parseSeq(target, errStop)
+    return seq.length > 0 ? { onError: seq } : {}
+  }
+
   const parseSeq = (startId: string | null, stop: Set<string>): Block[] => {
     const seq: Block[] = []
     let cur = startId
@@ -118,7 +160,7 @@ export function parseGraphToBlocks(nodes: Node<NodeData>[], edges: Edge[]): Bloc
         if (merge) innerStop.add(merge)
         const thenSeq = parseSeq(t, innerStop)
         const els = parseSeq(f, innerStop)
-        seq.push({ kind: 'if', id: cur, node, then: thenSeq, els })
+        seq.push({ kind: 'if', id: cur, node, then: thenSeq, els, ...parseOnError(cur, innerStop, [merge]) })
         cur = merge
       } else if (LOOP_TYPES.has(mt)) {
         const body = edgeTarget(edges, cur, 'loop')
@@ -126,7 +168,7 @@ export function parseGraphToBlocks(nodes: Node<NodeData>[], edges: Edge[]): Bloc
         const innerStop = new Set(stop)
         innerStop.add(cur)
         const bodySeq = parseSeq(body, innerStop)
-        seq.push({ kind: 'loop', id: cur, node, body: bodySeq })
+        seq.push({ kind: 'loop', id: cur, node, body: bodySeq, ...parseOnError(cur, innerStop, [done]) })
         cur = done
       } else {
         // 普通步骤：检查是否有多条顺序出边（并行扇出 / 多路执行）
@@ -142,10 +184,10 @@ export function parseGraphToBlocks(nodes: Node<NodeData>[], edges: Edge[]): Bloc
           const innerStop = new Set(stop)
           if (merge) innerStop.add(merge)
           const branches = uniqueOuts.map((t) => parseSeq(t, innerStop))
-          seq.push({ kind: 'parallel', id: cur, node, branches })
+          seq.push({ kind: 'parallel', id: cur, node, branches, ...parseOnError(cur, innerStop, [merge]) })
           cur = merge
         } else {
-          seq.push({ kind: 'step', id: cur, node })
+          seq.push({ kind: 'step', id: cur, node, ...parseOnError(cur, stop, uniqueOuts) })
           cur = uniqueOuts[0] || null
         }
       }
@@ -186,7 +228,8 @@ export function generateGraphFromBlocks(blocks: Block[]): { nodes: Node<NodeData
     for (const b of seq) w = Math.max(w, measure(b))
     return w
   }
-  const measure = (b: Block): number => {
+  const measure = (b: Block): number => measureOwn(b) + (b.onError?.length ? measureSeq(b.onError) : 0)
+  const measureOwn = (b: Block): number => {
     if (b.kind === 'if') return Math.max(1, measureSeq(b.then)) + Math.max(1, measureSeq(b.els))
     if (b.kind === 'loop') return Math.max(1, measureSeq(b.body))
     if (b.kind === 'parallel') return b.branches.reduce((s, br) => s + Math.max(1, measureSeq(br)), 0)
@@ -194,7 +237,14 @@ export function generateGraphFromBlocks(blocks: Block[]): { nodes: Node<NodeData
   }
 
   // 放置一个块：在 [laneStart, laneStart+laneWidth) 区间内居中节点，返回放置完成后的下一行号
-  const placeBlock = (b: Block, laneStart: number, laneWidth: number, row: number): number => {
+  // 错误处理链放在块自身内容的右侧一列起
+  const placeBlock = (b: Block, laneStart: number, fullWidth: number, row: number): number => {
+    const errW = b.onError?.length ? measureSeq(b.onError) : 0
+    const ownEnd = placeOwn(b, laneStart, fullWidth - errW, row)
+    if (!b.onError?.length) return ownEnd
+    return Math.max(ownEnd, placeSeq(b.onError, laneStart + fullWidth - errW, errW, row + 1))
+  }
+  const placeOwn = (b: Block, laneStart: number, laneWidth: number, row: number): number => {
     const center = laneStart + (laneWidth - 1) / 2
     outNodes.push({
       ...b.node,
@@ -265,6 +315,10 @@ export function generateGraphFromBlocks(blocks: Block[]): { nodes: Node<NodeData
     return entry
   }
   const wireBlock = (b: Block, followId: string | null): string => {
+    if (b.onError?.length) addEdge(b.id, wireSeq(b.onError, null), 'error')
+    return wireOwn(b, followId)
+  }
+  const wireOwn = (b: Block, followId: string | null): string => {
     if (b.kind === 'step') {
       addEdge(b.id, followId, null)
       return b.id
@@ -327,9 +381,7 @@ export function cloneBlock(b: Block): Block {
   const idMap = new Map<string, string>()
   const collect = (block: Block) => {
     idMap.set(block.id, nanoid())
-    if (block.kind === 'if') { block.then.forEach(collect); block.els.forEach(collect) }
-    else if (block.kind === 'loop') block.body.forEach(collect)
-    else if (block.kind === 'parallel') block.branches.forEach((branch) => branch.forEach(collect))
+    childSeqs(block).forEach((seq) => seq.forEach(collect))
   }
   collect(b)
 
@@ -353,16 +405,17 @@ export function cloneBlock(b: Block): Block {
       data,
       selected: false,
     }
+    const onError = block.onError ? { onError: block.onError.map(clone) } : {}
     if (block.kind === 'if') {
-      return { kind: 'if', id: newId, node, then: block.then.map(clone), els: block.els.map(clone), flowStart: false }
+      return { kind: 'if', id: newId, node, then: block.then.map(clone), els: block.els.map(clone), ...onError, flowStart: false }
     }
     if (block.kind === 'loop') {
-      return { kind: 'loop', id: newId, node, body: block.body.map(clone), flowStart: false }
+      return { kind: 'loop', id: newId, node, body: block.body.map(clone), ...onError, flowStart: false }
     }
     if (block.kind === 'parallel') {
-      return { kind: 'parallel', id: newId, node, branches: block.branches.map((branch) => branch.map(clone)), flowStart: false }
+      return { kind: 'parallel', id: newId, node, branches: block.branches.map((branch) => branch.map(clone)), ...onError, flowStart: false }
     }
-    return { kind: 'step', id: newId, node, flowStart: false }
+    return { kind: 'step', id: newId, node, ...onError, flowStart: false }
   }
   return clone(b)
 }
@@ -375,19 +428,9 @@ function locate(blocks: Block[], id: string): Found {
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]
     if (b.id === id) return { list: blocks, index: i }
-    if (b.kind === 'if') {
-      const inThen = locate(b.then, id)
-      if (inThen) return inThen
-      const inEls = locate(b.els, id)
-      if (inEls) return inEls
-    } else if (b.kind === 'loop') {
-      const inBody = locate(b.body, id)
-      if (inBody) return inBody
-    } else if (b.kind === 'parallel') {
-      for (const br of b.branches) {
-        const inBr = locate(br, id)
-        if (inBr) return inBr
-      }
+    for (const seq of childSeqs(b)) {
+      const found = locate(seq, id)
+      if (found) return found
     }
   }
   return null
@@ -396,17 +439,9 @@ function locate(blocks: Block[], id: string): Found {
 function findBlock(blocks: Block[], id: string): Block | null {
   for (const b of blocks) {
     if (b.id === id) return b
-    if (b.kind === 'if') {
-      const r = findBlock(b.then, id) || findBlock(b.els, id)
+    for (const seq of childSeqs(b)) {
+      const r = findBlock(seq, id)
       if (r) return r
-    } else if (b.kind === 'loop') {
-      const r = findBlock(b.body, id)
-      if (r) return r
-    } else if (b.kind === 'parallel') {
-      for (const br of b.branches) {
-        const r = findBlock(br, id)
-        if (r) return r
-      }
     }
   }
   return null
@@ -421,11 +456,13 @@ export function insertAfter(blocks: Block[], afterId: string | null, neu: Block)
   return [...blocks]
 }
 
-/** 插入到 if 分支(then/els) 或 loop 体的开头 */
-export function insertIntoContainer(blocks: Block[], containerId: string, slot: 'then' | 'els' | 'body', neu: Block): Block[] {
+/** 插入到 if 分支(then/els)、loop 体或错误分支(onError)的末尾 */
+export function insertIntoContainer(blocks: Block[], containerId: string, slot: 'then' | 'els' | 'body' | 'onError', neu: Block): Block[] {
   const c = findBlock(blocks, containerId)
   if (!c) return blocks
-  if (c.kind === 'if' && (slot === 'then' || slot === 'els')) {
+  if (slot === 'onError') {
+    c.onError = [...(c.onError ?? []), neu]
+  } else if (c.kind === 'if' && (slot === 'then' || slot === 'els')) {
     c[slot] = [...c[slot], neu]
   } else if (c.kind === 'loop' && slot === 'body') {
     c.body = [...c.body, neu]
@@ -467,9 +504,7 @@ export function moveBlock(blocks: Block[], id: string, dir: -1 | 1): Block[] {
 /** 收集一个块（含其分支/循环体）内的所有 block id */
 function subtreeIds(b: Block, acc: Set<string>) {
   acc.add(b.id)
-  if (b.kind === 'if') { b.then.forEach((x) => subtreeIds(x, acc)); b.els.forEach((x) => subtreeIds(x, acc)) }
-  else if (b.kind === 'loop') { b.body.forEach((x) => subtreeIds(x, acc)) }
-  else if (b.kind === 'parallel') { b.branches.forEach((br) => br.forEach((x) => subtreeIds(x, acc))) }
+  childSeqs(b).forEach((seq) => seq.forEach((x) => subtreeIds(x, acc)))
 }
 
 /**
@@ -481,7 +516,7 @@ function subtreeIds(b: Block, acc: Set<string>) {
 export function moveBlockTo(
   blocks: Block[],
   id: string,
-  target: { mode: 'after'; id: string | null } | { mode: 'before'; id: string } | { mode: 'into'; id: string; slot: 'then' | 'els' | 'body' },
+  target: { mode: 'after'; id: string | null } | { mode: 'before'; id: string } | { mode: 'into'; id: string; slot: 'then' | 'els' | 'body' | 'onError' },
 ): Block[] {
   const moving = findBlock(blocks, id)
   if (!moving) return blocks

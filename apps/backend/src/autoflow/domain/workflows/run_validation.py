@@ -13,6 +13,7 @@ from .manual_contract import validate_declaration
 from .models import WorkflowError, WorkflowIssue
 from .parallel_graph import structured_fork
 from .project_end import normalize_project_end
+from .scope import validate_graph_entry
 from .validation import project_document
 
 _DEFAULT_CONFIGS: dict[str, dict[str, Any]] = {
@@ -94,7 +95,8 @@ def prepare_run(document: object) -> PreparedWorkflow:
         if not valid and (members or not scope) and not all(n["data"]["moduleType"] in _DEFAULT_CONFIGS for n in nodes):
             raise WorkflowError(
                 "WORKFLOW_NOT_RUNNABLE", "；".join(errors), 422,
-                [WorkflowIssue(None, ["content", "edges"], "INVALID_EXECUTION_GRAPH", message) for message in errors],
+                [WorkflowIssue(None, ["content", "edges"], "INVALID_EXECUTION_GRAPH", message) for message in errors]
+                + [WorkflowIssue(None, ["content", "edges"], i.code, i.message) for i in validate_graph_entry(subset['nodes'], subset['edges'])],
             )
     # Defaults validate Studio content without rewriting its frozen snapshot.
     validation_nodes = deepcopy(nodes) if graph_adapter else nodes

@@ -198,3 +198,56 @@ def test_approved_but_not_yet_migrated_type_is_rejected_before_execution() -> No
     assert issues[0].code == "UNSUPPORTED_NODE_TYPE"
     assert issues[0].path == "nodes.0.data.moduleType"
     assert issues[0].message == "节点类型 click_element 的真实执行器尚未迁入"
+
+
+def _node(node_id: str, module_type: str = "print_log") -> dict[str, object]:
+    return {"id": node_id, "type": "moduleNode", "data": {"moduleType": module_type}}
+
+
+def _edge(source: str, target: str, handle: str | None = None) -> dict[str, object]:
+    edge: dict[str, object] = {"id": f"{source}-{target}", "source": source, "target": target}
+    if handle:
+        edge["sourceHandle"] = handle
+    return edge
+
+
+def test_validate_graph_entry_rejects_fully_cyclic_graph() -> None:
+    from autoflow.domain.workflows.scope import validate_graph_entry
+
+    issues = validate_graph_entry(
+        [_node("a"), _node("b")], [_edge("a", "b"), _edge("b", "a")]
+    )
+
+    assert [issue.code for issue in issues] == ["NO_START_NODE"]
+    assert "没有可以开始的节点" in issues[0].message
+
+
+def test_validate_graph_entry_accepts_graphs_with_a_start() -> None:
+    from autoflow.domain.workflows.scope import validate_graph_entry
+
+    assert validate_graph_entry([], []) == ()
+    assert validate_graph_entry([_node("a"), _node("b")], [_edge("a", "b")]) == ()
+    # an isolated node is a start, and so is a node only reached through an error edge
+    assert validate_graph_entry(
+        [_node("a"), _node("b"), _node("c")], [_edge("a", "b"), _edge("b", "a")]
+    ) == ()
+    assert validate_graph_entry(
+        [_node("a"), _node("b")], [_edge("b", "a", "error"), _edge("a", "b")]
+    ) == ()
+    # display-only nodes never count as part of the executable graph
+    assert validate_graph_entry(
+        [_node("a"), {"id": "n", "type": "noteNode", "data": {"moduleType": "note"}}],
+        [_edge("n", "a")],
+    ) == ()
+
+
+def test_runtime_preflight_rejects_cyclic_graph_with_no_start_node() -> None:
+    from autoflow.application.workflows.executors.registry import ExecutorRegistry
+    from autoflow.application.workflows.runtime import WorkflowRuntime
+
+    runtime = WorkflowRuntime(ExecutorRegistry())
+    issues = runtime.preflight(
+        {"nodes": [_node("a"), _node("b")], "edges": [_edge("a", "b"), _edge("b", "a")]}
+    )
+
+    assert "NO_START_NODE" in {issue.code for issue in issues}

@@ -6,6 +6,8 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from .graph import WorkflowDefinition, WorkflowParser
+
 # AutoFlow extensions are separate from the frozen WebRPA source catalog.
 DIAGNOSTIC_NODE_TYPES = frozenset({'trace_mark', 'capture_diagnostics', 'save_trace_segment'})
 
@@ -415,3 +417,22 @@ def validate_workflow_scope(
                 continue
     visit(nodes, "nodes")
     return tuple(issues)
+
+
+NO_START_NODE_MESSAGE = "流程里没有可以开始的节点：每个节点都被别的节点指向，请指定一个起点"
+
+
+def validate_graph_entry(
+    nodes: Iterable[Mapping[str, Any]],
+    edges: Iterable[Mapping[str, Any]],
+) -> tuple[WorkflowScopeIssue, ...]:
+    """Reject a graph that has nodes but none can start (e.g. a full cycle).
+
+    Reuses the executor's start-node rule so preflight and execution agree.
+    """
+
+    definition = WorkflowDefinition.from_raw({"nodes": list(nodes), "edges": list(edges)})
+    graph = WorkflowParser().parse(definition)
+    if not graph.nodes or graph.start_nodes:
+        return ()
+    return (WorkflowScopeIssue("", "edges", "NO_START_NODE", NO_START_NODE_MESSAGE, ""),)

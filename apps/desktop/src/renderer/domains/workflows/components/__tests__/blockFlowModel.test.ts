@@ -8,6 +8,8 @@ import {
   insertAfter,
   cloneBlock,
   moveBlockTo,
+  findEntryProblem,
+  type Block,
 } from '../blockFlowModel'
 
 describe('blockFlowModel', () => {
@@ -111,5 +113,111 @@ describe('blockFlowModel', () => {
     expect(restored).toHaveLength(1)
     if (restored[0].kind !== 'loop') throw new Error('循环结构未恢复')
     expect(restored[0].body.map((block) => block.id)).toEqual([nested.id, tail.id])
+  })
+})
+
+describe('blockFlowModel 错误分支', () => {
+  const withError = (kind: 'step' | 'condition' | 'loop') => {
+    const source = createBlock(kind === 'step' ? ('click_element' as never) : (kind as never))
+    const main = createBlock('print_log' as never)
+    const handler = createBlock('print_log' as never)
+    const handler2 = createBlock('print_log' as never)
+    return { source, main, handler, handler2 }
+  }
+  const e = (source: string, target: string, sourceHandle?: string) =>
+    ({ id: `${source}-${sourceHandle ?? 'd'}-${target}`, source, target, ...(sourceHandle ? { sourceHandle } : {}) })
+
+  it('步骤块的错误边在图与模块条之间往返不丢失', () => {
+    const { source, main, handler, handler2 } = withError('step')
+    const nodes = [source, main, handler, handler2].map((b) => b.node)
+    const edges = [e(source.id, main.id), e(source.id, handler.id, 'error'), e(handler.id, handler2.id)]
+    const blocks = parseGraphToBlocks(nodes, edges)
+    expect(blocks).toHaveLength(2)
+    expect(blocks[0]).toMatchObject({ kind: 'step', id: source.id })
+    expect((blocks[0] as Block & { onError?: Block[] }).onError?.map((b) => b.id)).toEqual([handler.id, handler2.id])
+
+    const back = generateGraphFromBlocks(blocks)
+    expect(back.nodes.map((n) => n.id).sort()).toEqual([source.id, main.id, handler.id, handler2.id].sort())
+    expect(back.edges).toContainEqual(expect.objectContaining({ source: source.id, target: handler.id, sourceHandle: 'error' }))
+    expect(back.edges).toContainEqual(expect.objectContaining({ source: source.id, target: main.id }))
+    expect(back.edges).toContainEqual(expect.objectContaining({ source: handler.id, target: handler2.id }))
+    // 错误处理链不会被接回主流程
+    expect(back.edges.some((x) => x.source === handler2.id)).toBe(false)
+    expect(parseGraphToBlocks(back.nodes, back.edges)).toEqual(blocks.map((b) => expect.objectContaining({ id: b.id })))
+  })
+
+  it('已知限制：同一节点的第二条错误出边、错误链回到主流程的边在往返后不保留', () => {
+    const { source, main, handler, handler2 } = withError('step')
+    const nodes = [source, main, handler, handler2].map((b) => b.node)
+    const edges = [e(source.id, main.id), e(source.id, handler.id, 'error'), e(source.id, handler2.id, 'error'), e(handler.id, main.id)]
+    const back = generateGraphFromBlocks(parseGraphToBlocks(nodes, edges))
+    expect(back.edges.filter((x) => x.sourceHandle === 'error')).toHaveLength(1)
+    expect(back.edges.some((x) => x.source === handler.id && x.target === main.id)).toBe(false)
+    expect(back.nodes.map((n) => n.id)).toContain(handler2.id)
+  })
+
+  it('条件块与循环块同样保留错误边', () => {
+    for (const kind of ['condition', 'loop'] as const) {
+      const { source, handler } = withError(kind)
+      const edges = [e(source.id, handler.id, 'error')]
+      const blocks = parseGraphToBlocks([source.node, handler.node], edges)
+      expect(blocks).toHaveLength(1)
+      expect((blocks[0] as Block & { onError?: Block[] }).onError?.map((b) => b.id)).toEqual([handler.id])
+      const back = generateGraphFromBlocks(blocks)
+      expect(back.edges).toEqual([expect.objectContaining({ source: source.id, target: handler.id, sourceHandle: 'error' })])
+    }
+  })
+
+  it('没有错误边的旧数据不产生 onError 字段', () => {
+    const a = createBlock('print_log' as never)
+    const b = createBlock('print_log' as never)
+    const blocks = parseGraphToBlocks([a.node, b.node], [e(a.id, b.id)])
+    expect(blocks.every((x) => !('onError' in x))).toBe(true)
+    expect(generateGraphFromBlocks(blocks).edges).toEqual([
+      expect.objectContaining({ id: `e-${a.id}-d-${b.id}`, source: a.id, target: b.id, type: 'smoothstep', animated: true }),
+    ])
+  })
+
+  it('复制带错误分支的块时错误链节点获得新标识', () => {
+    const { source, handler } = withError('step')
+    const block = { ...source, onError: [handler] } as Block
+    const copied = cloneBlock(block) as Block & { onError?: Block[] }
+    expect(copied.onError).toHaveLength(1)
+    expect(copied.onError![0].id).not.toBe(handler.id)
+  })
+
+  it('可向步骤块的错误分支插入并移动块', () => {
+    const { source, handler } = withError('step')
+    const blocks = insertIntoContainer([source], source.id, 'onError', handler)
+    expect((blocks[0] as Block & { onError?: Block[] }).onError?.map((b) => b.id)).toEqual([handler.id])
+  })
+})
+
+describe('findEntryProblem', () => {
+  const mk = (id: string) => ({ ...createBlock('print_log' as never).node, id })
+  const ed = (source: string, target: string, sourceHandle?: string) =>
+    ({ id: `${source}-${target}`, source, target, ...(sourceHandle ? { sourceHandle } : {}) })
+
+  it('完全循环的图没有起点', () => {
+    const problem = findEntryProblem([mk('a'), mk('b')], [ed('a', 'b'), ed('b', 'a')])
+    expect(problem?.code).toBe('NO_START_NODE')
+    expect(problem?.message).toContain('没有可以开始的节点')
+  })
+
+  it('有入度为零的节点、空图、孤立节点都不报错', () => {
+    expect(findEntryProblem([mk('a'), mk('b')], [ed('a', 'b')])).toBeNull()
+    expect(findEntryProblem([], [])).toBeNull()
+    expect(findEntryProblem([mk('a'), mk('b'), mk('c')], [ed('a', 'b'), ed('b', 'a')])).toBeNull()
+  })
+
+  it('错误边不计入普通入边', () => {
+    // a 只被错误边指向：后端仍把它当起点
+    expect(findEntryProblem([mk('a'), mk('b')], [ed('b', 'a', 'error'), ed('a', 'b')])).toBeNull()
+    expect(findEntryProblem([mk('a'), mk('b')], [ed('b', 'a'), ed('a', 'b', 'error')])).toBeNull()
+  })
+
+  it('忽略不是模块节点的展示节点', () => {
+    const note = { ...mk('n'), type: 'noteNode' }
+    expect(findEntryProblem([mk('a'), mk('b'), note], [ed('a', 'b'), ed('b', 'a'), ed('n', 'a')])).not.toBeNull()
   })
 })
