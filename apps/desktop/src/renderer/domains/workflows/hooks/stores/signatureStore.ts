@@ -57,7 +57,8 @@ export const useSignatureStore = create<SignatureState>((set, get) => {
         issues: parsed.issues, dirty: false, readOnly: parsed.issues.length > 0, canSave: parsed.issues.length === 0, epoch: state.epoch + 1,
       }))
     },
-    markSaved: () => set(state => ({ baseline: snapshot(state.inputs, state.rest), dirty: false })),
+    // A draft that could not be serialized was not saved, so it must stay unsaved instead of looking saved.
+    markSaved: () => set(state => (state.canSave && !state.readOnly ? { baseline: snapshot(state.inputs, state.rest), dirty: false } : {})),
     async refreshIssues(workflowId, fetchIssues) {
       const epoch = get().epoch
       const result = await fetchIssues(workflowId)

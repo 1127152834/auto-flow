@@ -26,6 +26,21 @@ describe('signature store', () => {
     expect(sig().readOnly).toBe(false)
   })
 
+  it('an invalid draft stays unsaved after a document save instead of looking saved', () => {
+    sig().load(structuredClone(RAW))
+    sig().addInput({ key: 'order', name: '订单' })
+    sig().addField('order', { key: 'no', name: '单号', type: 'string' })
+    sig().addField('order', { key: 'no', name: '重复', type: 'string' })
+    expect(sig().canSave).toBe(false)
+    expect(sig().serialize()).toBeUndefined()
+    sig().markSaved()
+    expect(sig().dirty).toBe(true)
+    sig().removeField('order', 'no')
+    expect(sig().canSave).toBe(true)
+    sig().markSaved()
+    expect(sig().dirty).toBe(false)
+  })
+
   it('adds, edits and removes inputs and fields, tracking dirty', () => {
     sig().load(structuredClone(RAW))
     sig().addInput({ key: 'order', name: '订单' })

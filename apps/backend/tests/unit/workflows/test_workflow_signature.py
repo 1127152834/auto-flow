@@ -96,6 +96,18 @@ def test_sample_values_are_checked_against_the_field_type():
     assert all("样例" in issue.message for issue in bad)
 
 
+def test_sample_rules_match_the_studio_editor():
+    # Python's own parsers accept more than the editor does; the contract is the strict form.
+    _, bad = parse_signature(_fields(
+        {"key": "a", "type": "date", "sample": "20261007"},
+        {"key": "b", "type": "date", "sample": "2026-W41-3"},
+        {"key": "c", "type": "number", "sample": float("nan")},
+        {"key": "d", "type": "number", "sample": float("inf")},
+        {"key": "e", "type": "any", "sample": float("-inf")},
+    ))
+    assert [issue.path for issue in bad] == [f"signature.inputs.0.fields.{i}.sample" for i in range(5)]
+
+
 def test_sensitive_fields_reject_samples():
     _, issues = parse_signature(_fields({"key": "pw", "type": "string", "sensitive": True, "sample": "s3cret"}))
     assert [issue.path for issue in issues] == ["signature.inputs.0.fields.0.sample"]

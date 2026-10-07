@@ -8,6 +8,7 @@ display text and can change. Nodes reference ``{input.<inputKey>.<fieldKey>}``, 
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
@@ -66,8 +67,11 @@ class Reference:
     field: str | None
 
 
+_DATE_SAMPLE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
 def _sample_problem(kind: str, sample: Any) -> str | None:
-    number = isinstance(sample, (int, float)) and not isinstance(sample, bool)
+    number = isinstance(sample, (int, float)) and not isinstance(sample, bool) and math.isfinite(sample)
     if kind == "string" and not isinstance(sample, str):
         return "样例值需要是文本"
     if kind == "number" and not number:
@@ -76,10 +80,10 @@ def _sample_problem(kind: str, sample: Any) -> str | None:
         return "样例值需要是“是”或“否”"
     if kind == "date":
         try:
-            date.fromisoformat(sample) if isinstance(sample, str) else None
+            if not isinstance(sample, str) or not _DATE_SAMPLE.fullmatch(sample):
+                raise ValueError(sample)
+            date.fromisoformat(sample)
         except ValueError:
-            return "样例值需要是 年-月-日 格式的日期"
-        if not isinstance(sample, str):
             return "样例值需要是 年-月-日 格式的日期"
     if kind == "any" and not (isinstance(sample, (str, bool)) or number):
         return "样例值需要是文本、数字或“是/否”"

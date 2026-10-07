@@ -20,7 +20,6 @@ describe('internal id render scan', () => {
   })
 
   it.skip('ProjectDataConfig shows no fieldId (fix: A7 write-back form)', () => {})
-  it.skip('ProjectInputPanel candidate rows show no recordKey (A1 switches to the table display field; enable after A1 lands)', () => {})
   it.skip('navigation.ts shows no 数据代次 wording (later cleanup)', () => {})
   it.skip('DataTableSourcePanel shows no 数据代次 wording (later cleanup)', () => {})
 })

@@ -159,7 +159,10 @@ async def test_preview_reads_its_own_write_and_leaves_real_data_untouched_while_
         control, _logs = await finish(await start("realWrites"))
         assert control["status"] == "succeeded", control
         after = _snapshot(factory)
-        assert after["project_data_records"] != before["project_data_records"]
+        changed = {name for name in WATCHED if after[name] != before[name]}
+        assert "project_data_records" in changed
+        # The watched tables are live: real writes also leave bookkeeping behind, which the preview must not.
+        assert changed & {"automation_record_ledger", "project_sync_operations"}, changed
         with factory() as session:
             values = [json.loads(raw) if isinstance(raw, str) else raw for raw in session.scalars(text("select values_json from project_data_records"))]
         assert [list(item.values()) for item in values] == [["试跑值"]]
