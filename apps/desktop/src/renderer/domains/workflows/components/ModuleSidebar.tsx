@@ -197,6 +197,7 @@ import {
 } from 'lucide-react'
 import { TestReportIcon } from './icons/TestReportIcon'
 import { PanelResizer } from './PanelResizer'
+import { DataSidebar } from './DataSidebar'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
 import { isEnabled } from '../lib/featureFlags'
 
@@ -1797,7 +1798,7 @@ function ModuleItemRaw({
 const ModuleItem = memo(ModuleItemRaw)
 
 function ModuleSidebarRaw() {
-  const [activeTab, setActiveTab] = useState<'builtin' | 'custom'>('builtin')
+  const [activeTab, setActiveTab] = useState<'builtin' | 'custom' | 'data'>('builtin')
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const [newLayout] = useState(() => isEnabled('newStudioLayout'))
@@ -2062,6 +2063,17 @@ function ModuleSidebarRaw() {
                 <Sparkles className={`w-3.5 h-3.5 ${activeTab === 'custom' ? '!text-white' : ''}`} />
                 <span className={activeTab === 'custom' ? '!text-white' : ''}>自定义</span>
               </button>
+              <button
+                onClick={() => setActiveTab('data')}
+                className={`flex-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1.5 border ${
+                  activeTab === 'data'
+                    ? '!bg-[hsl(var(--brand-600))] !text-white !border-[hsl(var(--brand-700))] shadow-brand-glow'
+                    : '!bg-transparent !text-[hsl(var(--muted-foreground))] !border-transparent hover:!text-[hsl(var(--brand-700))] hover:!bg-[hsl(var(--card))]'
+                }`}
+              >
+                <DatabaseIcon className={`w-3.5 h-3.5 ${activeTab === 'data' ? '!text-white' : ''}`} />
+                <span className={activeTab === 'data' ? '!text-white' : ''}>数据</span>
+              </button>
             </div>
 
             {activeTab === 'builtin' && (
@@ -2173,6 +2185,8 @@ function ModuleSidebarRaw() {
                 })
               )}
             </ScrollArea>
+          ) : activeTab === 'data' ? (
+            <DataSidebar />
           ) : (
             <CustomModuleList
               onCreateNew={() => setShowCreateDialog(true)}
