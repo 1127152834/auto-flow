@@ -86,3 +86,18 @@ it('installs the first endpoint before notifying a mounted service consumer',asy
  try { expect(await result).toEqual(metadata);expect(request).toHaveBeenCalledOnce() }
  finally {window.removeEventListener('studio:transport-changed',refresh);restore()}
 })
+it('serves many consumers from one state: one read, later mounts see the loaded rules at once',async()=>{
+ const first=render(<Rules/>);await screen.findByText('test');expect(request).toHaveBeenCalledOnce()
+ render(<><Rules/><Rules/><Rules/></>)
+ expect(screen.getAllByText('test')).toHaveLength(4);expect(screen.queryByRole('status')).toBeNull();expect(request).toHaveBeenCalledOnce()
+ first.unmount()
+})
+it('reloads the shared rules when the transport changes, and stops listening after the last consumer unmounts',async()=>{
+ const view=render(<Rules/>);await screen.findByText('test');expect(request).toHaveBeenCalledOnce()
+ restores.push(configureStudioConnection('http://replacement-one.invalid',request))
+ await waitFor(()=>expect(request).toHaveBeenCalledTimes(2))
+ view.unmount()
+ restores.push(configureStudioConnection('http://replacement-two.invalid',request))
+ act(()=>window.dispatchEvent(new Event('studio:connection-restored')))
+ expect(request).toHaveBeenCalledTimes(2)
+})

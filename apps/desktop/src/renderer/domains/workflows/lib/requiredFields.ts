@@ -3,7 +3,7 @@
  * 模块必填字段（来源：后端模块 schema），用于配置面板的必填校验提示。
  * 全局缓存一次，避免重复请求。
  */
-import { useEffect, useState } from 'react'
+import { useCallback, useMemo, useSyncExternalStore } from 'react'
 import { apiRequest } from '../api'
 import { getFieldLabel } from './fieldLabels'
 import { getStudioTransportRevision } from '../api/transport'
@@ -47,30 +47,59 @@ export function fetchRequiredFields(refresh = false): Promise<RequiredFieldMetad
   return entry.promise
 }
 
-/** Share only successful metadata within one transport generation; failures remain visible and retryable. */
-export function useRequiredFields() {
-  const [state, setState] = useState<{data: RequiredFieldMetadata | null; loading: boolean; error: string | null}>({data:null,loading:true,error:null})
-  const [retry, setRetry] = useState(0)
-  useEffect(() => {
-    let alive = true
-    let sequence = 0
-    const load = (refresh = false) => {
-      const request = ++sequence
-      setState({data:null,loading:true,error:null})
-      void fetchRequiredFields(refresh).then(data => {
-        if (alive && request === sequence) setState({data,loading:false,error:null})
-      }).catch(error => {
-        if (alive && request === sequence) setState({data:null,loading:false,error:error instanceof Error ? error.message : String(error)})
-      })
-    }
-    const reconnect = () => load(true)
-    const replacement = () => load()
-    load(retry > 0)
+type RuleState = { data: RequiredFieldMetadata | null; loading: boolean; error: string | null }
+const RULES_LOADING: RuleState = { data: null, loading: true, error: null }
+let ruleState: RuleState = RULES_LOADING
+let ruleRequest = 0
+let detachRuleEvents: (() => void) | null = null
+const ruleListeners = new Set<() => void>()
+
+function setRuleState(next: RuleState) {
+  if (next === ruleState) return
+  ruleState = next
+  for (const listener of ruleListeners) listener()
+}
+
+function loadRules(refresh = false) {
+  const request = ++ruleRequest
+  setRuleState(RULES_LOADING)
+  void fetchRequiredFields(refresh).then(data => {
+    if (request === ruleRequest) setRuleState({ data, loading: false, error: null })
+  }).catch(error => {
+    if (request === ruleRequest) setRuleState({ data: null, loading: false, error: error instanceof Error ? error.message : String(error) })
+  })
+}
+
+// 所有使用方共用一份状态、一次读取、一组事件监听；最后一个使用方卸载时全部撤销。
+function subscribeRules(listener: () => void) {
+  ruleListeners.add(listener)
+  if (ruleListeners.size === 1) {
+    const replacement = () => loadRules()
+    const reconnect = () => loadRules(true)
     window.addEventListener('studio:transport-changed', replacement)
     window.addEventListener('studio:connection-restored', reconnect)
-    return () => { alive = false; window.removeEventListener('studio:transport-changed', replacement); window.removeEventListener('studio:connection-restored', reconnect) }
-  }, [retry])
-  return {...state, retry: () => setRetry(value => value + 1)}
+    detachRuleEvents = () => {
+      window.removeEventListener('studio:transport-changed', replacement)
+      window.removeEventListener('studio:connection-restored', reconnect)
+    }
+    loadRules()
+  }
+  return () => {
+    ruleListeners.delete(listener)
+    if (ruleListeners.size === 0) {
+      detachRuleEvents?.()
+      detachRuleEvents = null
+      ruleRequest++
+      ruleState = RULES_LOADING
+    }
+  }
+}
+
+/** Share only successful metadata within one transport generation; failures remain visible and retryable. */
+export function useRequiredFields() {
+  const state = useSyncExternalStore(subscribeRules, () => ruleState, () => RULES_LOADING)
+  const retry = useCallback(() => loadRules(true), [])
+  return useMemo(() => ({ ...state, retry }), [state, retry])
 }
 
 /** 计算某模块当前缺失的必填字段（支持按模式的条件必填，如 real_keyboard 不同 inputType） */

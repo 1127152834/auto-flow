@@ -56,11 +56,22 @@ export function computeAllNodeIssues(nodes: Node<NodeData>[], context: NodeIssue
   return map
 }
 
+// 同一份规则永远对应同一个 context 对象：节点角标、配置面板等多个使用方才会命中同一条缓存，
+// 不会各用各的 context 互相顶掉对方的结果。
+const contexts = new WeakMap<object, NodeIssueContext>()
+type RuleData = NonNullable<ReturnType<typeof useRequiredFields>['data']>
+function contextFor(data: RuleData): NodeIssueContext {
+  let context = contexts.get(data)
+  if (!context) {
+    context = { requiredFields: data.requiredFields, conditionalRequired: data.conditionalRequired, fieldLabels: data.fieldLabels }
+    contexts.set(data, context)
+  }
+  return context
+}
+
 function useIssueContext(): NodeIssueContext {
   const { data } = useRequiredFields()
-  return useMemo(() => data
-    ? { requiredFields: data.requiredFields, conditionalRequired: data.conditionalRequired, fieldLabels: data.fieldLabels }
-    : NO_CONTEXT, [data])
+  return data ? contextFor(data) : NO_CONTEXT
 }
 
 export function useNodeIssues(nodeId: string): NodeIssue[] {
