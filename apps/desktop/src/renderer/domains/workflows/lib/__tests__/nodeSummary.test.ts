@@ -9,6 +9,19 @@ const context: ReferenceContext = {
   variables: { 计数: {} },
 }
 
+describe('summarizeNode 取值顺序', () => {
+  const both = { moduleType: 'set_variable', variableName: '计数', value: '5' }
+  it('模块条：value 先于变量名，变量名不加箭头', () => {
+    expect(summarizeNode(both, context, 40, 'strip').text).toBe('5')
+    expect(summarizeNode({ moduleType: 'set_variable', variableName: '计数' }, context, 40, 'strip').text).toBe('计数')
+    expect(summarizeNode({ filePath: 'a', message: 'b', variableName: 'c' }, context, 40, 'strip').text).toBe('a')
+    expect(summarizeNode({ message: 'b', variableName: 'c' }, context, 40, 'strip').text).toBe('b')
+  })
+  it('画布：变量名带箭头且先于 value', () => {
+    expect(summarizeNode(both, context).text).toBe('→ 计数')
+  })
+})
+
 describe('summarizeNode', () => {
   it('无引用时保持原摘要', () => {
     expect(summarizeNode({ moduleType: 'click_element', selector: '#submit' }, context).text).toBe('#submit')

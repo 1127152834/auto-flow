@@ -32,11 +32,16 @@ let lastSources: unknown[] = []
 let lastKey = ''
 let lastContext: ReferenceContext = {}
 
-/** One shared result for all callers: rebuilt only when a source array changes, and kept (same object) while its content is equal. */
+/** Dragging replaces the node objects every frame but keeps id and data; only those feed the context. */
+const sameNodes = (a: DataNode[], b: DataNode[]) => a === b || (a.length === b.length && a.every((node, i) => node.id === b[i].id && node.data === b[i].data))
+
+/** One shared result for all callers: rebuilt only when a source changes, and kept (same object) while its content is equal. */
 export function selectReferenceContext(nodes: DataNode[], variables: DataVariable[], signature: SignatureInputDraft[], automation: ProjectAutomation | null) {
   const sources = [nodes, variables, signature, automation]
   if (sources.every((source, index) => source === lastSources[index])) return lastContext
+  const unchanged = sameNodes(nodes, lastSources[0] as DataNode[] ?? []) && sources.slice(1).every((source, index) => source === lastSources[index + 1])
   lastSources = sources
+  if (unchanged) return lastContext
   const next = buildReferenceContext({ signature, nodes, variables, automation })
   const key = JSON.stringify(next)
   if (key !== lastKey) { lastKey = key; lastContext = next }

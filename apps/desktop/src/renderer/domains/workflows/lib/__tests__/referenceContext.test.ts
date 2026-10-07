@@ -44,6 +44,19 @@ describe('selectReferenceContext', () => {
     expect(selectReferenceContext(moved, variables, signature, null)).toBe(first)
   })
 
+  it('只有位置变化（节点对象换了、data 引用不变）时直接返回同一对象，不重建', () => {
+    const first = selectReferenceContext(nodes, variables, signature, null)
+    const many = Array.from({ length: 200 }, (_, i) => ({ id: `m${i}`, position: { x: 0, y: 0 }, data: { moduleType: 'ai_chat', label: `n${i}` } }))
+    const base = selectReferenceContext(many, variables, signature, null)
+    expect(base).not.toBe(first)
+    const t0 = performance.now()
+    let result = base
+    for (let frame = 0; frame < 100; frame++) result = selectReferenceContext(many.map(node => ({ ...node, position: { x: frame, y: frame } })), variables, signature, null)
+    const perFrame = (performance.now() - t0) / 100
+    expect(result).toBe(base)
+    expect(perFrame).toBeLessThan(5)
+  })
+
   it('内容变了就给新对象', () => {
     const first = selectReferenceContext(nodes, variables, signature, null)
     const renamed = [{ ...nodes[0], data: { ...nodes[0].data, label: '改名了' } }, nodes[1]]

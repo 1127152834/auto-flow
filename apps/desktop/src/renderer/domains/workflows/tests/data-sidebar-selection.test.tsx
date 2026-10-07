@@ -43,6 +43,15 @@ describe('数据侧栏选中', () => {
     expect(selected()).toBeNull()
   })
 
+  it('已被别处消费（defaultPrevented）的 Esc 不清除高亮', async () => {
+    render(<DataSidebar />)
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /手机号/ })) })
+    const consumed = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true })
+    consumed.preventDefault()
+    window.dispatchEvent(consumed)
+    expect(selected()).toBe('{input.account.phone}')
+  })
+
   it('凭据只复制名称，不进入选中', async () => {
     render(<DataSidebar />)
     const row = await screen.findByRole('button', { name: /邮箱账号/ })

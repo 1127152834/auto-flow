@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { branchEdgeLabel } from './branchEdgeLabel'
 
 describe('branchEdgeLabel', () => {
-  it.each([['true', '是'], ['false', '否'], ['loop', '循环'], ['done', '完成'], ['error', '出错时']])('%s 连线显示 %s', (sourceHandle, label) => {
+  it.each([['true', '是'], ['false', '否'], ['loop', '循环'], ['done', '完成'], ['error', '出错时'], ['path1', '路径1'], ['path2', '路径2']])('%s 连线显示 %s', (sourceHandle, label) => {
     expect(branchEdgeLabel({ sourceHandle }).label).toBe(label)
   })
 
@@ -15,7 +15,7 @@ describe('branchEdgeLabel', () => {
   it('普通连线、未知出口、已有文字的连线不加标签', () => {
     expect(branchEdgeLabel({})).toEqual({})
     expect(branchEdgeLabel({ sourceHandle: null })).toEqual({})
-    expect(branchEdgeLabel({ sourceHandle: 'path1' })).toEqual({})
+    expect(branchEdgeLabel({ sourceHandle: 'other' })).toEqual({})
     expect(branchEdgeLabel({ sourceHandle: 'true', label: '自定义' })).toEqual({})
   })
 })

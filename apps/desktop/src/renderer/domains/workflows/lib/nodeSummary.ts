@@ -6,15 +6,23 @@ type NodeLike = Record<string, unknown>
 export type RefPart = Extract<ReferencePart, { type: 'ref' }>
 export type NodeSummary = { parts: ReferencePart[]; text: string }
 
-const TARGET_KEYS = ['url', 'selector', 'text', 'logMessage', 'variableName', 'userPrompt', 'requestUrl', 'value', 'filePath', 'inputPath', 'message', 'resultVariable', 'condition', 'count', 'listVariable']
+// Two lookup orders, each keeping what its surface showed before they were merged.
+// canvas: node card (variable names get a "→" prefix). strip: module strip rows (plain text, value before variable name).
+const CANVAS_KEYS = ['url', 'selector', 'text', 'logMessage', 'variableName', 'userPrompt', 'requestUrl', 'value', 'filePath', 'inputPath', 'message', 'resultVariable', 'condition', 'count', 'listVariable']
+const STRIP_KEYS = ['url', 'selector', 'text', 'value', 'filePath', 'inputPath', 'message', 'variableName', 'resultVariable', 'condition', 'count', 'listVariable']
+export type SummaryStyle = 'canvas' | 'strip'
 const SKIPPED_KEYS = new Set(['projectInputTypes', 'label', 'name'])
 const READ_OPERATIONS = new Set(['inputs', 'readRecord', 'queryRecords', 'queryTableSchema'])
 const WRITE_OPERATIONS = new Set(['createRecord', 'updateRecord', 'deleteRecord', 'setRecordStatus'])
 const filled = (value: unknown): value is string => typeof value === 'string' && value.trim() !== ''
 
-function targetText(data: NodeLike) {
-  if (data.moduleType === 'subflow' && filled(data.subflowName)) return data.subflowName
-  for (const key of TARGET_KEYS) if (filled(data[key])) return key === 'variableName' ? `→ ${data[key]}` : data[key] as string
+function targetText(data: NodeLike, style: SummaryStyle) {
+  if (style === 'canvas') {
+    if (data.moduleType === 'subflow' && filled(data.subflowName)) return data.subflowName
+    for (const key of CANVAS_KEYS) if (filled(data[key])) return key === 'variableName' ? `→ ${data[key]}` : data[key] as string
+    return ''
+  }
+  for (const key of STRIP_KEYS) if (filled(data[key])) return data[key] as string
   return ''
 }
 
@@ -31,8 +39,8 @@ function clip(parts: ReferencePart[], max: number): ReferencePart[] {
   return result
 }
 
-export function summarizeNode(data: NodeLike, context: ReferenceContext, max = 30): NodeSummary {
-  const parts = clip(parseReferences(targetText(data), context), max)
+export function summarizeNode(data: NodeLike, context: ReferenceContext, max = 30, style: SummaryStyle = 'canvas'): NodeSummary {
+  const parts = clip(parseReferences(targetText(data, style), context), max)
   return { parts, text: parts.map(referenceLabel).join('') }
 }
 

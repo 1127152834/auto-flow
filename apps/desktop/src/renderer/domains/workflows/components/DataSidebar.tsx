@@ -32,7 +32,7 @@ export function DataSidebar() {
 
   // Esc clears the canvas highlight; leaving the sidebar clears it too, so it cannot stay stuck.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') useDataSelectionStore.getState().clear() }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !e.defaultPrevented) useDataSelectionStore.getState().clear() }
     window.addEventListener('keydown', onKey)
     return () => { window.removeEventListener('keydown', onKey); useDataSelectionStore.getState().clear() }
   }, [])

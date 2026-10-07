@@ -1,5 +1,5 @@
 // Text on branch connections: the canvas node only labels its connection points, so a drawn line needs its own words.
-const LABELS: Record<string, string> = { true: '是', false: '否', loop: '循环', done: '完成', error: '出错时' }
+const LABELS: Record<string, string> = { true: '是', false: '否', loop: '循环', done: '完成', error: '出错时', path1: '路径1', path2: '路径2' }
 
 type LabelledEdge = { sourceHandle?: string | null; label?: unknown }
 

@@ -490,7 +490,7 @@ export function BlockFlowView() {
     // 兜底也复用同一份 DEFAULT_NODE_COLOR_CLASS，不在此处硬编码字面量（需求 4.3 / 4.6）
     const { bgClass: bgCls, accentBarClass: accentBar, accentTextClass: accentText } =
       getBlockRowColorClasses(type)
-    const summary = summarizeNode(data, referenceContext, 40).text
+    const summary = summarizeNode(data, referenceContext, 40, 'strip').text
     const selected = node.id === selectedNodeId
     const multiSelected = selectedIds.has(node.id)
     const isSel = selected || multiSelected
