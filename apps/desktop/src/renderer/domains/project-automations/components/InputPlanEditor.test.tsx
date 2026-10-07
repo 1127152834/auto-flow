@@ -256,3 +256,30 @@ it('binds data to the workflow signature and names what is still missing', async
   expect(screen.queryByText(/还缺少字段/)).toBeNull()
   expect(screen.queryByRole('status')).toBeNull()
 })
+
+it('prefills bindings by name when a workflow input is chosen, without touching existing ones', async () => {
+  const signature = { inputs: [{ key: 'doc', name: '文档', fields: [{ key: 'title', name: '标 题', type: 'string' as const, required: true, sensitive: false }, { key: 'pages', name: '页数', type: 'number' as const, required: false, sensitive: false }] }] }
+  const p = props({ inputs: [input] })
+  render(<InputPlanEditor {...p} signature={signature}/>)
+  await chooseOption(userEvent.setup(), screen.getByRole('combobox', { name: '对应流程输入 资料' }), 'doc')
+  const bindings = p.onChange.mock.lastCall![0].inputs[0].fieldBindings
+  expect(bindings.map((item: { signatureField: string; fieldRef: { fieldId: string } }) => [item.signatureField, item.fieldRef.fieldId])).toEqual([['title', 'f1'], ['pages', 'f2']])
+})
+
+it('pre-checks the draft plan, shows matched rows and focuses a relation editor from the graph', async () => {
+  const second = { ...input, inputId: 'i2', alias: '归档', tableId: 't1', datasetGeneration: 'g-t1', mode: 'related' as const, relation: { type: 'sameRecord' as const, sourceInputId: 'i1' } }
+  const matchInputs = vi.fn().mockResolvedValue({ inputs: [{ inputId: 'i1', alias: '资料', outcome: 'counted', matchedCount: 7, unprocessedCount: 3, sample: [{ 标题: '甲' }] }, { inputId: 'i2', alias: '归档', outcome: 'dependsOnOtherInput', matchedCount: null, unprocessedCount: null, sample: [] }] })
+  render(<InputPlanEditor {...props({ inputs: [input, second] })} matchInputs={matchInputs}/>)
+  expect(await screen.findByText('甲', {}, { timeout: 2000 })).toBeVisible()
+  expect(screen.getAllByTestId('input-match')[0]).toHaveTextContent('当前条件匹配 7 行，其中未处理 3 行')
+  expect(matchInputs).toHaveBeenCalledTimes(1)
+  fireEvent.click(screen.getByRole('button', { name: /关联：同一记录/ }))
+  expect(document.activeElement).toHaveAttribute('data-relation-editor', 'i2')
+})
+
+it('shows why the pre-check failed without blocking edits', async () => {
+  const matchInputs = vi.fn().mockRejectedValue(new Error('数据表读取超时'))
+  render(<InputPlanEditor {...props()} matchInputs={matchInputs}/>)
+  expect(await screen.findByRole('alert', {}, { timeout: 2000 })).toHaveTextContent('数据表读取超时')
+  expect(screen.getByRole('button', { name: '添加数据输入' })).toBeEnabled()
+})
