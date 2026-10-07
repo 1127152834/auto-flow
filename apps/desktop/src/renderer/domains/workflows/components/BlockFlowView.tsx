@@ -12,12 +12,12 @@ import { getNodeConfigData, useWorkflowStore, moduleTypeLabels, type NodeData, t
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { moduleIcons, moduleCategories, moduleKeywords } from './ModuleSidebar'
 import { getBlockRowColorClasses } from './moduleColors'
-import { Plus, Search, Trash2, X, ChevronUp, ChevronDown, Ban, CheckCircle2, RotateCcw } from 'lucide-react'
+import { Plus, Search, Trash2, X, ChevronUp, ChevronDown, Ban, CheckCircle2, RotateCcw, AlertTriangle } from 'lucide-react'
 import type { ModuleType } from '../types/index'
 import {
   parseGraphToBlocks, generateGraphFromBlocks, createBlock,
   insertAfter, insertBefore, insertIntoContainer, removeBlock, moveBlock, moveBlockTo,
-  cloneBlock,  type Block,
+  cloneBlock, findEntryProblem, type Block,
 } from './blockFlowModel'
 import { collectNodeVarNames } from '../lib/moduleDefaultVars'
 import { moduleMatchesQuery } from '../lib/pinyin'
@@ -31,7 +31,7 @@ let blockClipboard: Block[] = []
 type PickerTarget =
   | { mode: 'before'; id: string }
   | { mode: 'after'; id: string | null }
-  | { mode: 'into'; id: string; slot: 'then' | 'els' | 'body' }
+  | { mode: 'into'; id: string; slot: 'then' | 'els' | 'body' | 'onError' }
 
 function getSummary(data: NodeData): string {
   const candidates = ['url', 'selector', 'text', 'value', 'filePath', 'inputPath', 'message', 'variableName', 'resultVariable', 'condition', 'count', 'listVariable']
@@ -131,6 +131,7 @@ export function BlockFlowView() {
   const savedScrollRef = useRef<number>(0)
 
   const blocks = useMemo(() => parseGraphToBlocks(nodes, edges), [nodes, edges])
+  const entryProblem = useMemo(() => findEntryProblem(nodes, edges), [nodes, edges])
 
   // 每次渲染后把滚动位置恢复到用户上次所在处（仅当被重挂载清零等导致偏离时）
   useLayoutEffect(() => {
@@ -244,6 +245,7 @@ export function BlockFlowView() {
         if (b.kind === 'if') { walk(b.then); walk(b.els) }
         else if (b.kind === 'loop') walk(b.body)
         else if (b.kind === 'parallel') b.branches.forEach(walk)
+        if (b.onError) walk(b.onError)
       }
     }
     walk(blocks)
@@ -312,6 +314,7 @@ export function BlockFlowView() {
       if (b.kind === 'if') { collectTopLevelSelected(b.then, sel, out); collectTopLevelSelected(b.els, sel, out) }
       else if (b.kind === 'loop') collectTopLevelSelected(b.body, sel, out)
       else if (b.kind === 'parallel') b.branches.forEach((br) => collectTopLevelSelected(br, sel, out))
+      if (b.onError) collectTopLevelSelected(b.onError, sel, out)
     }
   }
   const handleCopy = () => {
@@ -574,6 +577,7 @@ export function BlockFlowView() {
         <div className="flex basis-full @[32rem]/blocks:basis-auto justify-end items-center gap-0.5 opacity-0 group-hover/row:opacity-100 focus-within:opacity-100 transition-opacity flex-shrink-0">
           <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, -1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="上移"><ChevronUp className="w-3.5 h-3.5" /></button>
           <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, 1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="下移"><ChevronDown className="w-3.5 h-3.5" /></button>
+          <button onClick={(e) => { e.stopPropagation(); openPickerAt({ mode: 'into', id: block.id, slot: 'onError' }, block.id) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--warning-700))] hover:bg-[hsl(var(--warning-500)/0.12)] transition-colors" title="添加出错时的处理步骤"><AlertTriangle className="w-3.5 h-3.5" /></button>
           <button onClick={(e) => { e.stopPropagation(); toggleNodesDisabled([node.id]) }} className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--slate-100))] ' + (disabled ? 'text-[hsl(var(--brand-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--slate-700))]')} title={disabled ? '启用 (Ctrl+D)' : '禁用 (Ctrl+D)'}><Ban className="w-3.5 h-3.5" /></button>
           <button onClick={(e) => { e.stopPropagation(); handleDelete(block.id) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--danger-600))] hover:bg-[hsl(var(--danger-50))] transition-colors" title="删除"><Trash2 className="w-3.5 h-3.5" /></button>
         </div>
@@ -626,11 +630,29 @@ export function BlockFlowView() {
 
   // 统计一个序列内的步骤总数（用于折叠时显示“已折叠 N 步”、并保持序号稳定）
   const countSteps = (seq: Block[]): number => seq.reduce((n, b) => {
-    if (b.kind === 'if') return n + 1 + countSteps(b.then) + countSteps(b.els)
-    if (b.kind === 'loop') return n + 1 + countSteps(b.body)
-    if (b.kind === 'parallel') return n + 1 + b.branches.reduce((m, br) => m + countSteps(br), 0)
-    return n + 1
+    const err = b.onError ? countSteps(b.onError) : 0
+    if (b.kind === 'if') return n + 1 + countSteps(b.then) + countSteps(b.els) + err
+    if (b.kind === 'loop') return n + 1 + countSteps(b.body) + err
+    if (b.kind === 'parallel') return n + 1 + b.branches.reduce((m, br) => m + countSteps(br), 0) + err
+    return n + 1 + err
   }, 0)
+
+  // 出错时分支区域：来源节点下方，处理链到此结束
+  const renderOnError = (b: Block, counter: { n: number }): React.ReactNode => {
+    if (!b.onError) return null
+    return (
+      <div key={b.id + '^onError'} data-testid={`on-error-${b.id}`} className="pl-4 pr-2.5 py-2">
+        <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[hsl(var(--warning-500)/0.12)] text-[hsl(var(--warning-700))] text-[10.5px] font-bold border border-[hsl(var(--warning-500)/0.3)]">
+          <AlertTriangle className="w-2.5 h-2.5" /> 出错时
+        </div>
+        <div className="ml-1 pl-3 border-l-2 border-[hsl(var(--warning-500)/0.4)] space-y-0.5">
+          {renderSeq(b.onError, counter)}
+          <EmptySlot target={{ mode: 'into', id: b.id, slot: 'onError' }} text="添加「出错时」处理步骤" />
+          <div className="text-[10.5px] text-[hsl(var(--slate-500))]">出错处理到这里就结束了，不会回到主流程继续往下执行。</div>
+        </div>
+      </div>
+    )
+  }
 
   // 渲染一个序列（counter 维护全局序号）
   const renderSeq = (seq: Block[], counter: { n: number }): React.ReactNode[] => {
@@ -650,10 +672,11 @@ export function BlockFlowView() {
       const num = ++counter.n
       if (b.kind === 'step') {
         out.push(<StepRow key={b.id} block={b} num={num} kind="step" />)
+        if (b.onError) out.push(renderOnError(b, counter))
       } else if (b.kind === 'if') {
         const lbl = branchLabels(b.node.data.moduleType as string)
         const isCol = collapsed.has(b.id)
-        const cc = countSteps(b.then) + countSteps(b.els)
+        const cc = countSteps(b.then) + countSteps(b.els) + (b.onError ? countSteps(b.onError) : 0)
         if (isCol) counter.n += cc
         out.push(
           <div key={b.id} className="rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
@@ -675,6 +698,7 @@ export function BlockFlowView() {
                 <EmptySlot target={{ mode: 'into', id: b.id, slot: 'els' }} text={`添加「${lbl.no}」分支步骤`} />
               </div>
             </div>
+            {renderOnError(b, counter)}
             <div className="px-3 py-1.5 text-[10.5px] font-medium text-[hsl(var(--slate-400))] bg-[hsl(var(--slate-50))] border-t border-[hsl(var(--border))] flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--slate-300))]" /> 结束判断
             </div>
@@ -683,7 +707,7 @@ export function BlockFlowView() {
         )
       } else if (b.kind === 'loop') {
         const isCol = collapsed.has(b.id)
-        const cc = countSteps(b.body)
+        const cc = countSteps(b.body) + (b.onError ? countSteps(b.onError) : 0)
         if (isCol) counter.n += cc
         out.push(
           <div key={b.id} className="rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
@@ -698,6 +722,7 @@ export function BlockFlowView() {
                 <EmptySlot target={{ mode: 'into', id: b.id, slot: 'body' }} text="添加循环体步骤" />
               </div>
             </div>
+            {renderOnError(b, counter)}
             <div className="px-3 py-1.5 text-[10.5px] font-medium text-[hsl(var(--slate-400))] bg-[hsl(var(--slate-50))] border-t border-[hsl(var(--border))] flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--teal-400))]" /> 结束循环
             </div>
@@ -707,7 +732,7 @@ export function BlockFlowView() {
       } else {
         // 并行：本步骤之后并行分出多条分支
         const isCol = collapsed.has(b.id)
-        const cc = b.branches.reduce((m, br) => m + countSteps(br), 0)
+        const cc = b.branches.reduce((m, br) => m + countSteps(br), 0) + (b.onError ? countSteps(b.onError) : 0)
         if (isCol) counter.n += cc
         out.push(
           <div key={b.id} className="rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
@@ -726,6 +751,7 @@ export function BlockFlowView() {
                 ))}
               </div>
             )}
+            {!isCol && renderOnError(b, counter)}
             <div className="px-3 py-1.5 text-[10.5px] font-medium text-[hsl(var(--slate-400))] bg-[hsl(var(--slate-50))] border-t border-[hsl(var(--border))] flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--violet-400))]" /> 分支汇合
             </div>
@@ -742,6 +768,7 @@ export function BlockFlowView() {
       if (b.kind === 'if') { acc.push(b.id); collectContainerIds(b.then, acc); collectContainerIds(b.els, acc) }
       else if (b.kind === 'loop') { acc.push(b.id); collectContainerIds(b.body, acc) }
       else if (b.kind === 'parallel') { acc.push(b.id); b.branches.forEach((br) => collectContainerIds(br, acc)) }
+      if (b.onError) collectContainerIds(b.onError, acc)
     })
     return acc
   }
@@ -758,6 +785,11 @@ export function BlockFlowView() {
       onDrop={handleCanvasDrop}
     >
       <div className="w-full max-w-[1280px] mx-auto">
+        {entryProblem && (
+          <div role="alert" className="mb-3 flex items-start gap-2 px-3 py-2 rounded-[8px] border border-[hsl(var(--warning-500)/0.3)] bg-[hsl(var(--warning-500)/0.12)] text-[12px] text-[hsl(var(--warning-700))]">
+            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" /> {entryProblem.message}
+          </div>
+        )}
         {blocks.length > 0 && (
           <div className="flex items-center justify-between mb-3 px-0.5">
             <span className="text-[12px] text-[hsl(var(--muted-foreground))]">
