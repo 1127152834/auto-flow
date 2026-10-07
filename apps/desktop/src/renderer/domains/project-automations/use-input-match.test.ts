@@ -57,3 +57,13 @@ it('stays idle without a fetcher or without inputs', async () => {
   expect(fetcher).not.toHaveBeenCalled()
   expect(none.result.current.status).toBe('idle'); expect(empty.result.current.status).toBe('idle')
 })
+
+it('marks a validation-class failure as quiet and keeps other failures loud', async () => {
+  const fetcher = vi.fn().mockRejectedValueOnce(Object.assign(new Error('bad'), { code: 'VALIDATION_ERROR' })).mockRejectedValueOnce(new Error('超时'))
+  const { result, rerender } = renderHook(({ value }) => useInputMatch({ fetcher, plan: value }), { initialProps: { value: plan('a') } })
+  await act(async () => { await vi.advanceTimersByTimeAsync(600) })
+  expect(result.current.status).toBe('error'); expect(result.current.quiet).toBe(true)
+  rerender({ value: plan('b') })
+  await act(async () => { await vi.advanceTimersByTimeAsync(600) })
+  expect(result.current.quiet).toBe(false); expect(result.current.error).toBe('超时')
+})

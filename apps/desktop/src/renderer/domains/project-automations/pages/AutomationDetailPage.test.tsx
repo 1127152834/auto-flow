@@ -137,3 +137,34 @@ it('shows the saved concurrency limit in the actual launch dialog', async () => 
   expect(within(dialog).getByText('配置并发上限 2')).toBeVisible()
   expect(within(dialog).queryByText('按顺序执行')).not.toBeInTheDocument()
 })
+
+const tableView = { tableId: 't1', name: '资料表', datasetGeneration: 'g1', identity: { mode: 'system' }, slotDefinitions: [] }
+const withTable = (path: string) => path.includes('/tables?') ? { items: [tableView], total: 1, page: 1, pageSize: 200, sort: 'name' } : path.endsWith('/fields') || path.endsWith('/statuses') ? { items: [] } : resources(path)
+const savedWithInput: Automation = { ...automation, inputPlan: { inputs: [{ inputId: 'i1', alias: '资料', tableId: 't1', datasetGeneration: 'g1', mode: 'independent', required: true, fieldBindings: [], filter: { type: 'all', items: [] }, orderBy: [] }] } }
+
+it('pre-checks matched rows for a saved automation', async () => {
+  const request = vi.fn(async (path: string) => {
+    if (path.endsWith('/input-match')) return { inputs: [{ inputId: 'i1', alias: '资料', outcome: 'counted', matchedCount: 4, unprocessedCount: 1, sample: [] }] }
+    if (path.endsWith('/automations/a')) return savedWithInput
+    const found = withTable(path); if (found) return found
+    throw new Error(`unexpected ${path}`)
+  }) as StreamingApiClient['request']
+  mount(request, { automationId: 'a' })
+  await userEvent.setup().click(await screen.findByRole('tab', { name: '输入与参数' }))
+  expect(await screen.findByTestId('input-match', {}, { timeout: 3000 })).toHaveTextContent('当前条件匹配 4 行')
+  expect(request).toHaveBeenCalledWith(expect.stringMatching(/\/automations\/a\/input-match$/), expect.anything())
+})
+
+it('tells a new automation that the row count appears after saving, without calling the pre-check', async () => {
+  const calls: string[] = []
+  const request = (async (path: string) => { calls.push(path); return withTable(path) ?? { items: [] } }) as StreamingApiClient["request"]
+  mount(request)
+  const user = userEvent.setup()
+  await user.click(await screen.findByRole('tab', { name: '输入与参数' }))
+  await waitFor(() => expect(screen.getByRole('button', { name: '添加数据输入' })).toBeEnabled())
+  expect(screen.queryByText('保存后可查看当前条件匹配的行数。')).toBeNull()
+  await user.click(screen.getByRole('button', { name: '添加数据输入' }))
+  expect(await screen.findByText('保存后可查看当前条件匹配的行数。')).toBeVisible()
+  await new Promise(resolve => setTimeout(resolve, 800))
+  expect(calls.some(path => path.endsWith("/input-match"))).toBe(false)
+})

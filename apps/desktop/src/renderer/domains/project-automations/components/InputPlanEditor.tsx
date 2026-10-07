@@ -28,9 +28,11 @@ export type InputPlanEditorProps = {
   signature?: components['schemas']['WorkflowSignature'] | null
   /** Remediation M5 R5-17: pre-checks the draft plan (matched rows and samples); omitted when the automation is not saved yet. */
   matchInputs?: InputMatchFetcher
+  /** True for an automation that is not saved yet: the pre-check needs a saved automation, so say so. */
+  matchAfterSave?: boolean
 }
 
-export function InputPlanEditor({ value, onChange, tables, disabled = false, errors = {}, resetKey = '', onDraftStateChange, onLoadRecords, signature, matchInputs }: InputPlanEditorProps) {
+export function InputPlanEditor({ value, onChange, tables, disabled = false, errors = {}, resetKey = '', onDraftStateChange, onLoadRecords, signature, matchInputs, matchAfterSave = false }: InputPlanEditorProps) {
   const unboundGroups = (signature?.inputs ?? []).filter(item => !value.inputs.some(input => input.signatureInput === item.key))
   const [filterDrafts, setFilterDrafts] = useState<Record<string, boolean>>({})
   const root = useRef<HTMLElement>(null)
@@ -72,7 +74,7 @@ export function InputPlanEditor({ value, onChange, tables, disabled = false, err
     {requiredInputs.length > 1 ? <div className="grid gap-2 rounded-control border border-line bg-surface-subtle p-3"><p className="m-0 text-sm text-muted">有多份必填数据，请选择批量运行时逐行处理哪一份；其他数据只作参考，不会被逐行消耗。</p><Select className="max-w-sm" aria-label="逐行处理的数据" value={value.processingInputId ?? null} options={requiredInputs.map(input => ({ value: input.inputId, label: input.alias || '未命名输入', disabled: false }))} clearable={false} disabled={disabled} errorMessage={errors.processingInputId} onValueChange={inputId => { if (inputId) commit(value.inputs, inputId) }}/></div> : null}
     {unboundGroups.length ? <p role="status" className="m-0 text-sm text-warning">工作流需要的流程输入还没有绑定数据：{unboundGroups.map(item => item.name).join('、')}</p> : null}
     <RelationGraph inputs={value.inputs} tables={tables} onSelect={focusRelation}/>
-    {matchInputs ? <InputMatchStatus state={match}/> : null}
+    {matchInputs ? <InputMatchStatus state={match}/> : matchAfterSave && value.inputs.length ? <p className="m-0 text-xs text-muted">保存后可查看当前条件匹配的行数。</p> : null}
     {value.inputs.map((input, index) => {
       const table = tables.find(item => item.id === input.tableId)
       const group = signature?.inputs.find(item => item.key === input.signatureInput)
@@ -85,7 +87,7 @@ export function InputPlanEditor({ value, onChange, tables, disabled = false, err
         {input.mode === 'related' ? <InputRelationSection input={input} index={index} context={context} relatedCandidates={relatedCandidates} disabled={disabled} onChange={change}/> : null}
         <FieldBindingSection input={input} table={table} group={group} disabled={disabled} onChange={change}/>
         {table ? <InputConditionSection input={input} table={table} resetKey={resetKey} draftPending={Boolean(filterDrafts[input.inputId])} disabled={disabled} onDirtyChange={dirty => setFilterDrafts(current => current[input.inputId] === dirty ? current : { ...current, [input.inputId]: dirty })} onChange={change}/> : null}
-        {matchInputs ? <InputMatchPreview item={match.items.get(input.inputId)} stale={match.status === 'loading'}/> : null}
+        {matchInputs ? <InputMatchPreview item={match.items.get(input.inputId)} input={input} table={table} stale={match.status === 'loading'}/> : null}
       </article>
     })}
   </section>

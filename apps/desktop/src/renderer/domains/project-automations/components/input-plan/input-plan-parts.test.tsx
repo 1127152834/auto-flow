@@ -79,7 +79,7 @@ it('reports a failed check with its reason and a retry', () => {
 
 it('draws related inputs as labelled links and selects the link target', () => {
   const second = { ...input, inputId: 'i2', alias: '归档', tableId: 't2', datasetGeneration: 'g-t2', mode: 'related', relation: { type: 'fieldEquals', sourceInputId: input.inputId, sourceFieldRef: ref('t1', 'f1'), targetFieldRef: ref('t2', 'f3') } } as unknown as InputDefinition
-  expect(relationEdges([input, second], tables)).toEqual([{ inputId: 'i2', sourceId: input.inputId, label: '标题 = 名称' }])
+  expect(relationEdges([input, second], tables)).toEqual([{ inputId: 'i2', sourceId: input.inputId, label: '标题 = 名称', sourceField: '标题', targetField: '名称' }])
   const onSelect = vi.fn()
   const { container } = render(<RelationGraph inputs={[input, second]} tables={tables} onSelect={onSelect}/>)
   expect(screen.getByText('标题 = 名称')).toBeInTheDocument()
@@ -91,4 +91,53 @@ it('draws related inputs as labelled links and selects the link target', () => {
 it('renders nothing when no input is related', () => {
   const { container } = render(<RelationGraph inputs={[input]} tables={tables} onSelect={vi.fn()}/>)
   expect(container).toBeEmptyDOMElement()
+})
+
+const pair = (): InputDefinition[] => {
+  const second = { ...input, inputId: 'i2', alias: '归档', tableId: 't2', datasetGeneration: 'g-t2', mode: 'related', relation: { type: 'fieldEquals', sourceInputId: input.inputId, sourceFieldRef: ref('t1', 'f1'), targetFieldRef: ref('t2', 'f3') } } as unknown as InputDefinition
+  return [input, second]
+}
+
+it('exposes the graph as a group with a text list of every link that jumps to the same editor', () => {
+  const onSelect = vi.fn()
+  render(<RelationGraph inputs={pair()} tables={tables} onSelect={onSelect}/>)
+  expect(screen.getByRole('group', { name: '输入关联图' })).toBeInTheDocument()
+  expect(screen.queryByRole('img')).toBeNull()
+  const list = screen.getByRole('list', { name: '关联列表' })
+  fireEvent.click(within(list).getByRole('button', { name: '资料·标题 ↔ 归档·名称' }))
+  expect(onSelect).toHaveBeenCalledWith('i2')
+})
+
+it('bows links between the same two inputs at different heights and clips long names', () => {
+  const [a, b] = pair()
+  const back = { ...a, mode: 'related', relation: { type: 'sameRecord', sourceInputId: 'i2' }, alias: '一个非常非常非常长的输入名称需要截断显示' } as unknown as InputDefinition
+  const { container } = render(<RelationGraph inputs={[back, b]} tables={tables} onSelect={vi.fn()}/>)
+  const paths = Array.from(container.querySelectorAll('svg path[stroke="currentColor"]')).map(path => path.getAttribute('d'))
+  expect(paths).toHaveLength(2)
+  expect(new Set(paths).size).toBe(2)
+  const name = screen.getAllByText(/一个非常非常非常长/).find(node => node.tagName.toLowerCase() === 'text')!
+  expect(name.textContent).toContain('截断显示')
+  expect(name.closest('[clip-path]')).not.toBeNull()
+})
+
+it('keeps the pre-check reason intact without doubled punctuation', () => {
+  render(<InputMatchStatus state={{ status: 'error', error: '数据表读取超时。', retry: vi.fn() }}/>)
+  expect(screen.getByRole('alert').textContent).toContain('数据表读取超时。已填写')
+  expect(screen.getByRole('alert').textContent).not.toContain('。。')
+})
+
+it('shows a validation-class pre-check answer as a quiet hint, not a warning', () => {
+  render(<InputMatchStatus state={{ status: 'error', error: '请选择数据表', quiet: true, retry: vi.fn() }}/>)
+  expect(screen.queryByRole('alert')).toBeNull()
+  expect(screen.getByRole('status')).toHaveTextContent('补全后会自动检查')
+  expect(screen.getByRole('status')).toHaveTextContent('请选择数据表')
+})
+
+it('never shows an internal key as a sample column header', () => {
+  const bound = { ...input, fieldBindings: [{ inputFieldId: 'b', inputFieldAlias: '', fieldRef: ref('t1', 'f1'), signatureField: 'title' }] }
+  const item = { inputId: 'i', alias: '资料', outcome: 'counted', matchedCount: 2, unprocessedCount: null, sample: [{ '': 'A' }, { '': 'B' }] } as never
+  const view = render(<InputMatchPreview item={item} input={bound} table={tables[0]}/>)
+  expect(screen.getByRole('columnheader')).toHaveTextContent('标题')
+  view.rerender(<InputMatchPreview item={item}/>)
+  expect(screen.getByRole('columnheader')).toHaveTextContent('第 1 列')
 })
