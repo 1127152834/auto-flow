@@ -291,7 +291,7 @@ describe('模块配色三处同源审计 - module-integrity-audit Property 7', (
   it('Requirement 4.6: 三处取色调用点不得硬编码兜底配色字面量', () => {
     const sites: { file: string; requiredImport: string; scanFallbackLiteral: boolean }[] = [
       // 这两处历史上各自写过兜底字面量（'border-gray-500 bg-gray-50' / 'border-slate-300'），需扫描
-      { file: 'components/ModuleNode.tsx', requiredImport: 'getNodeColorClass', scanFallbackLiteral: true },
+      { file: 'components/ModuleNode.tsx', requiredImport: 'getBlockRowColorClasses', scanFallbackLiteral: true },
       { file: 'components/BlockFlowView.tsx', requiredImport: 'getBlockRowColorClasses', scanFallbackLiteral: true },
       // 缩略图仅核验调用点：该文件还负责自定义模块的用户自选色，含与模块配色无关的色值默认值
       { file: 'components/WorkflowEditor.tsx', requiredImport: 'getModuleHexColor', scanFallbackLiteral: false },
