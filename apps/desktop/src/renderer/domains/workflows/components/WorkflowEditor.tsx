@@ -44,6 +44,7 @@ import { Toolbar } from './Toolbar'
 import { RemoteCursor } from './RemoteCursor'
 import { SubflowMonitorDialog } from './SubflowMonitorDialog'
 import { ExecutionSemanticsBanner } from './ExecutionSemanticsBanner'
+import { branchEdgeLabel } from './edges/branchEdgeLabel'
 import { socketService } from '../events'
 import { remoteService } from '../api/remote'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
@@ -1730,6 +1731,7 @@ export function WorkflowEditor() {
               // 大工作流（>200节点）关闭连线流动动画，显著降低渲染开销
               animated: nodes.length > 200 ? false : (e as typeof e & { animated?: boolean }).animated,
               selected: selectedEdgeIds.includes(e.id),
+              ...branchEdgeLabel(e),
               style: selectedEdgeIds.includes(e.id) ? { stroke: '#ef4444', strokeWidth: 3 } : e.style
             })),
               // 由各模块 errorPolicy 派生的「错误回流」可视化连线（红色虚线，只读不可选删）

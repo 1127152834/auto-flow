@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Search } from 'lucide-react'
 import { credentialApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
+import { useDataSelectionStore } from '../hooks/stores/dataSelectionStore'
 import { useSignatureStore } from '../hooks/stores/signatureStore'
 import { buildDataSidebar, filterRows, referencesInNode, type DataCredential, type DataGroupId, type DataRow } from '../lib/dataSidebarModel'
 
@@ -26,6 +27,15 @@ export function DataSidebar() {
   const [notice, setNotice] = useState('')
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const prefix = useId()
+  const selectedReference = useDataSelectionStore(s => s.selectedReference)
+  const toggleReference = useDataSelectionStore(s => s.toggle)
+
+  // Esc clears the canvas highlight; leaving the sidebar clears it too, so it cannot stay stuck.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') useDataSelectionStore.getState().clear() }
+    window.addEventListener('keydown', onKey)
+    return () => { window.removeEventListener('keydown', onKey); useDataSelectionStore.getState().clear() }
+  }, [])
 
   useEffect(() => {
     let live = true
@@ -83,9 +93,9 @@ export function DataSidebar() {
                 <li key={row.key} className="relative">
                   {row.subgroup && row.subgroup !== section.rows[index - 1]?.subgroup && <div className="px-1 pt-1 text-[10.5px] text-[hsl(var(--muted-foreground))]">{row.subgroup}</div>}
                   <button
-                    type="button" onClick={() => void copy(row)} aria-describedby={open ? tipId : undefined} data-highlighted={highlighted ? 'true' : undefined}
+                    type="button" onClick={() => { if (row.isReference) toggleReference(row.copyText); void copy(row) }} aria-pressed={row.isReference ? selectedReference === row.copyText : undefined} aria-describedby={open ? tipId : undefined} data-highlighted={highlighted ? 'true' : undefined}
                     onMouseEnter={() => setActive(row.key)} onMouseLeave={() => setActive(null)} onFocus={() => setActive(row.key)} onBlur={() => setActive(null)} onKeyDown={e => { if (e.key === 'Escape' && open) { e.stopPropagation(); setActive(null) } }}
-                    className={`flex w-full items-center gap-1.5 rounded-control px-2 py-1 text-left text-[12px] hover:bg-[hsl(var(--brand-50))] focus-visible:bg-[hsl(var(--brand-50))] ${highlighted ? 'bg-[hsl(var(--brand-50))] ring-1 ring-[hsl(var(--brand-500)/0.5)]' : ''}`}
+                    className={`flex w-full items-center gap-1.5 rounded-control px-2 py-1 text-left text-[12px] hover:bg-[hsl(var(--brand-50))] focus-visible:bg-[hsl(var(--brand-50))] ${highlighted || selectedReference === row.copyText ? 'bg-[hsl(var(--brand-50))] ring-1 ring-[hsl(var(--brand-500)/0.5)]' : ''}`}
                   >
                     <span className="min-w-0 flex-1 truncate">{row.title}{row.group === 'credentials' && row.description && <span className="block truncate text-[11px] text-[hsl(var(--muted-foreground))]">{row.description}</span>}</span>
                     {row.required && <span className={CHIP}>必填</span>}

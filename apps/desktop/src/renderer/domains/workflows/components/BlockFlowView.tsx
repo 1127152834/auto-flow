@@ -24,6 +24,8 @@ import {
 import { collectNodeVarNames } from '../lib/moduleDefaultVars'
 import { moduleMatchesQuery } from '../lib/pinyin'
 import { activePolicy, describePolicy } from '../lib/errorPolicy'
+import { summarizeNode } from '../lib/nodeSummary'
+import { useReferenceContext } from '../lib/referenceContext'
 
 // 模块条复制粘贴的会话级剪贴板（跨组件重渲染保留；存的是已换新 id 的快照，
 // 每次粘贴时再 clone 一次，保证可重复粘贴且 id 不冲突）
@@ -34,15 +36,6 @@ type PickerTarget =
   | { mode: 'before'; id: string }
   | { mode: 'after'; id: string | null }
   | { mode: 'into'; id: string; slot: 'then' | 'els' | 'body' | 'onError' }
-
-function getSummary(data: NodeData): string {
-  const candidates = ['url', 'selector', 'text', 'value', 'filePath', 'inputPath', 'message', 'variableName', 'resultVariable', 'condition', 'count', 'listVariable']
-  for (const k of candidates) {
-    const v = data[k]
-    if (v && typeof v === 'string' && v.trim()) return v.length > 40 ? v.slice(0, 40) + '…' : v
-  }
-  return ''
-}
 
 /** 分支模块的两个分支显示标签 + 头部前缀（与 ModuleNode 端点标签一致） */
 function branchLabels(mt: string): { yes: string; no: string; head: string } {
@@ -132,6 +125,7 @@ export function BlockFlowView() {
   const toggleNodesDisabled = useWorkflowStore((s) => s.toggleNodesDisabled)
   const ensureGlobalVariables = useWorkflowStore((s) => s.ensureGlobalVariables)
   const runStatuses = useNodeRunStore((s) => s.statuses)
+  const referenceContext = useReferenceContext()
 
   // 多选（像资源管理器：单击单选 / Ctrl 切换 / Shift 范围 / Ctrl+A 全选）
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -496,7 +490,7 @@ export function BlockFlowView() {
     // 兜底也复用同一份 DEFAULT_NODE_COLOR_CLASS，不在此处硬编码字面量（需求 4.3 / 4.6）
     const { bgClass: bgCls, accentBarClass: accentBar, accentTextClass: accentText } =
       getBlockRowColorClasses(type)
-    const summary = getSummary(data)
+    const summary = summarizeNode(data, referenceContext, 40).text
     const selected = node.id === selectedNodeId
     const multiSelected = selectedIds.has(node.id)
     const isSel = selected || multiSelected

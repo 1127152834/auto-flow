@@ -40,7 +40,7 @@ function show(value: unknown) {
   return clip(typeof value === 'object' ? JSON.stringify(value) : String(value))
 }
 
-function nodeTitles(nodes: DataNode[]) {
+export function nodeTitles(nodes: DataNode[]) {
   const titleOf = (node: DataNode) => isRecord(node.data) ? String(node.data.label || node.data.name || (moduleTypeLabels as Record<string, string>)[String(node.data.moduleType)] || node.data.moduleType || '') : ''
   const total = new Map<string, number>()
   for (const node of nodes) total.set(titleOf(node), (total.get(titleOf(node)) ?? 0) + 1)

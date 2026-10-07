@@ -4,12 +4,16 @@ import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react'
 import { cn } from '../lib/utils'
 import { getNodeConfigData, type NodeData } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
-import { Globe, ExternalLink, LocateFixed, Play, Loader2, CheckCircle2, XCircle, SkipForward, AlertTriangle } from 'lucide-react'
+import { Globe, ExternalLink, LocateFixed, Play, Loader2, CheckCircle2, XCircle, SkipForward, AlertTriangle, BookOpen, Pencil } from 'lucide-react'
 import { moduleIcons, excludedModuleTypes } from './ModuleSidebar'
 import { getBlockRowColorClasses } from './moduleColors'
 import { useNodeIssues } from '../lib/nodeIssues'
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { useDebugStore } from '../hooks/stores/debugStore'
+import { useDataSelectionStore } from '../hooks/stores/dataSelectionStore'
+import { nodesReferencing } from '../lib/dataSidebarModel'
+import { dataAccess, nodeDataTags, summarizeNode, type RefPart } from '../lib/nodeSummary'
+import { useReferenceContext } from '../lib/referenceContext'
 
 const RING_KEYFRAMES_ID = 'af-node-ring-keyframes'
 // 运行外圈关键帧：全局样式不归本步骤所有，先在此注入一次（data-motion=reduce/off 下由 [style*="infinite"] 规则压制为静态环）
@@ -35,6 +39,18 @@ export function accentThemeColor(borderClass: string): string | undefined {
   return match ? `var(--color-${match[1]})` : undefined
 }
 
+function ReferenceChip({ part, className }: { part: RefPart; className?: string }) {
+  return (
+    <span
+      data-testid={part.valid ? 'node-data-tag' : 'node-data-tag-invalid'}
+      title={part.valid ? undefined : '这个引用指向的数据已不存在，请重新选择'}
+      className={cn('inline-block max-w-full rounded-control px-1 align-bottom', part.valid ? 'bg-info-soft text-info' : 'bg-warning-soft text-warning-strong', className)}
+    >
+      {part.display}
+    </span>
+  )
+}
+
 function ModuleNodeComponent({ id, data, selected }: NodeProps) {
   const rawNodeData = data as NodeData
   const nodeData = getNodeConfigData(rawNodeData)
@@ -46,6 +62,9 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
   const toggleBreakpoint = useDebugStore((s) => s.toggleBreakpoint)
   const isDisabled = rawNodeData.disabled === true
   const isHighlighted = rawNodeData.isHighlighted === true
+  const referenceContext = useReferenceContext()
+  const selectedReference = useDataSelectionStore((s) => s.selectedReference)
+  const usesSelectedData = selectedReference !== null && nodesReferencing([{ id, data: rawNodeData }], selectedReference).length > 0
   const handleSize = useGlobalConfigStore((state) => state.config.display?.handleSize || 12)
 
   // 对于自定义模块，使用节点数据中的图标和颜色
@@ -90,22 +109,10 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
     }
   }
 
-  const getSummary = () => {
-    if (nodeData.moduleType === 'subflow' && nodeData.subflowName) return `${nodeData.subflowName}`
-    if (nodeData.url) return nodeData.url as string
-    if (nodeData.selector) return nodeData.selector as string
-    if (nodeData.text) return nodeData.text as string
-    if (nodeData.logMessage) return nodeData.logMessage as string
-    if (nodeData.variableName) return `→ ${nodeData.variableName}`
-    if (nodeData.userPrompt) return nodeData.userPrompt as string
-    if (nodeData.requestUrl) return nodeData.requestUrl as string
-    return ''
-  }
-
-  const truncateText = (text: string, maxLen: number) =>
-    text.length <= maxLen ? text : text.slice(0, maxLen) + '...'
-
-  const summary = truncateText(getSummary(), 30)
+  const summary = summarizeNode(nodeData, referenceContext)
+  const extraTags = nodeDataTags(nodeData, referenceContext, summary)
+  const shownTags = extraTags.slice(0, 2)
+  const access = dataAccess(nodeData, [...summary.parts.filter((part) => part.type === 'ref'), ...extraTags])
   const customName = rawNodeData.name as string | undefined
   const isSubflow = nodeData.moduleType === 'subflow'
 
@@ -119,6 +126,7 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
         isDisabled && 'bg-disabled-surface text-disabled-ink opacity-70',
         selected && '!border-[hsl(var(--brand-500))] !shadow-pop-lg ring-2 ring-[hsl(var(--brand-500)/0.4)]',
         isHighlighted && '!border-[hsl(var(--warning-500))] ring-2 ring-[hsl(var(--warning-500)/0.5)]',
+        usesSelectedData && '!border-info ring-2 ring-info/60',
         // 执行态：运行中只有外圈进度元素；成功/失败只变色，不带动画
         runStatus === 'running' && '!border-info',
         runStatus === 'success' && '!border-success ring-2 ring-success/45',
@@ -129,6 +137,7 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
         (nodeData as any).__aiSpawning && 'ai-node-spawn'
       )}
       data-testid="module-node"
+      data-data-highlighted={usesSelectedData ? 'true' : undefined}
       style={isDisabled ? { opacity: 0.6 } : undefined}
       onDoubleClick={isSubflow && nodeData.subflowName ? handleSubflowDoubleClick : undefined}
     >
@@ -232,17 +241,29 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
               </span>
             )}
           </div>
-          {summary && (
+          {(summary.text || shownTags.length > 0) && (
             <div className={cn(
               'text-[13px] truncate mt-0.5',
               isSubflow && nodeData.subflowName ? 'text-success font-bold' : 'text-muted'
             )}>
-              {summary}
+              {summary.parts.map((part, index) => part.type === 'text' ? part.text : <ReferenceChip key={index} part={part} />)}
+              {shownTags.map((tag, index) => <ReferenceChip key={tag.raw} part={tag} className={summary.text || index > 0 ? 'ml-1' : undefined} />)}
+              {extraTags.length > shownTags.length && <span className="ml-1">+{extraTags.length - shownTags.length}</span>}
             </div>
           )}
         </div>
-        {(issues.length > 0 || statusBadge) && (
+        {(issues.length > 0 || statusBadge || access.read || access.write) && (
           <div className="flex shrink-0 items-center gap-1">
+            {access.read && (
+              <span role="img" data-testid="node-read-badge" aria-label="读取数据" title="读取数据" className="flex h-5 w-5 items-center justify-center rounded-full bg-info-soft text-info">
+                <BookOpen className="h-3.5 w-3.5" />
+              </span>
+            )}
+            {access.write && (
+              <span role="img" data-testid="node-write-badge" aria-label="写入项目数据" title="写入项目数据" className="flex h-5 w-5 items-center justify-center rounded-full bg-success-soft text-success">
+                <Pencil className="h-3.5 w-3.5" />
+              </span>
+            )}
             {issues.length > 0 && (
               <span
                 role="img"
