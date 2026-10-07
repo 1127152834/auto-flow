@@ -198,7 +198,7 @@ import {
 import { TestReportIcon } from './icons/TestReportIcon'
 import { PanelResizer } from './PanelResizer'
 import { DataSidebar } from './DataSidebar'
-import { ProjectWriteEntries } from './ProjectWriteEntries'
+import { ProjectWriteEntries, useProjectWriteEntries } from './ProjectWriteEntries'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
 import { isEnabled } from '../lib/featureFlags'
 
@@ -1959,7 +1959,9 @@ function ModuleSidebarRaw() {
   }, [searchQuery, showFavoritesOnly, favoriteModules, frequentModules, sortedCategoriesCache])
 
   // 搜索结果模块数
-  const filteredModulesCount = filteredCategories.reduce((sum, cat) => sum + cat.modules.length, 0)
+  const searchedWriteEntries = useProjectWriteEntries(searchQuery.trim())
+  const writeEntries = showFavoritesOnly ? [] : searchedWriteEntries
+  const filteredModulesCount = filteredCategories.reduce((sum, cat) => sum + cat.modules.length, 0) + (searchQuery.trim() ? writeEntries.length : 0)
   
   // 总模块数
   const totalModulesCount = useMemo(() => {
@@ -2124,8 +2126,8 @@ function ModuleSidebarRaw() {
           
           {activeTab === 'builtin' ? (
             <ScrollArea className="flex-1 p-2">
-              <ProjectWriteEntries query={searchQuery.trim()} />
-              {filteredCategories.length === 0 ? (
+              <ProjectWriteEntries entries={writeEntries} />
+              {filteredCategories.length === 0 ? (writeEntries.length > 0 ? null : (
                 <div className="empty-state animate-fade-in">
                   <div className="empty-state-icon">
                     <Search className="w-7 h-7" strokeWidth={1.6} />
@@ -2133,7 +2135,7 @@ function ModuleSidebarRaw() {
                   <div className="empty-state-title">未找到匹配的模块</div>
                   <div className="empty-state-desc">试试拼音、首字母或英文关键词</div>
                 </div>
-              ) : (
+                )) : (
                 filteredCategories.map((category) => {
                   const expanded = isExpanded(category.name)
                   return (

@@ -9,11 +9,12 @@ import { useMemo, useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type React from 'react'
 import { getNodeConfigData, useWorkflowStore, moduleTypeLabels, type NodeData, type ErrorPolicy } from '../editor-store'
-import { parseProjectWriteDrag, projectWriteDefaults } from '../lib/moduleCatalog'
+import { parseProjectWriteDrag, projectWriteDefaults, type ProjectWriteEntry } from '../lib/moduleCatalog'
+import { useProjectWriteEntries } from './ProjectWriteEntries'
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { moduleIcons, moduleCategories, moduleKeywords } from './ModuleSidebar'
 import { getBlockRowColorClasses } from './moduleColors'
-import { Plus, Search, Trash2, X, ChevronUp, ChevronDown, Ban, CheckCircle2, RotateCcw, AlertTriangle } from 'lucide-react'
+import { Database, Plus, Search, Trash2, X, ChevronUp, ChevronDown, Ban, CheckCircle2, RotateCcw, AlertTriangle } from 'lucide-react'
 import type { ModuleType } from '../types/index'
 import {
   parseGraphToBlocks, generateGraphFromBlocks, createBlock,
@@ -53,9 +54,11 @@ function branchLabels(mt: string): { yes: string; no: string; head: string } {
 }
 
 /** 模块选择弹层（portal 到 body，fixed 定位，避免被滚动容器裁剪） */
-function ModulePicker({ x, y, onPick, onClose }: { x: number; y: number; onPick: (t: ModuleType) => void; onClose: () => void }) {
+export function ModulePicker({ x, y, onPick, onClose }: { x: number; y: number; onPick: (t: ModuleType, extra?: Partial<NodeData>) => void; onClose: () => void }) {
   const [query, setQuery] = useState('')
   const q = query.trim()
+  const writeEntries = useProjectWriteEntries(q)
+  const pickWrite = (entry: ProjectWriteEntry) => onPick('project_data' as ModuleType, projectWriteDefaults(entry) as unknown as Partial<NodeData>)
   const filtered = useMemo(() => moduleCategories
     .map((cat) => ({ ...cat, modules: cat.modules.filter((m) => {
       if (!q) return true
@@ -86,6 +89,17 @@ function ModulePicker({ x, y, onPick, onClose }: { x: number; y: number; onPick:
           <button onClick={onClose} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"><X className="w-3.5 h-3.5" /></button>
         </div>
         <div className="flex-1 overflow-y-auto p-1.5" onWheel={(e) => e.stopPropagation()}>
+          {writeEntries.length > 0 && (
+            <div className="mb-1">
+              <div className="px-2 py-1 text-[10.5px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">项目数据</div>
+              {writeEntries.map((entry) => (
+                <button key={entry.id} onClick={() => pickWrite(entry)} title={entry.description} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-left hover:bg-[hsl(var(--brand-50))] transition-colors">
+                  <Database className="w-3.5 h-3.5 text-[hsl(var(--brand-600))]" />
+                  <span className="text-[12.5px] text-[hsl(var(--slate-700))]">{entry.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
           {filtered.map((cat) => (
             <div key={cat.name} className="mb-1">
               <div className="px-2 py-1 text-[10.5px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wider">{cat.name}</div>
@@ -100,7 +114,7 @@ function ModulePicker({ x, y, onPick, onClose }: { x: number; y: number; onPick:
               })}
             </div>
           ))}
-          {filtered.length === 0 && <div className="py-6 text-center text-[12px] text-[hsl(var(--muted-foreground))]">无匹配模块</div>}
+          {filtered.length === 0 && writeEntries.length === 0 && <div className="py-6 text-center text-[12px] text-[hsl(var(--muted-foreground))]">无匹配模块</div>}
         </div>
       </div>
     </>,
@@ -835,7 +849,7 @@ export function BlockFlowView() {
         <ModulePicker
           x={picker.x}
           y={picker.y}
-          onPick={(t) => handlePick(t)}
+          onPick={(t, extra) => handlePick(t, extra)}
           onClose={() => setPicker(null)}
         />
       )}

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { NodeData } from '../../editor-store'
@@ -110,4 +111,67 @@ test('an old generic node keeps its operation and raw arguments', async () => {
   render(<ProjectDataConfig data={nodeData('deleteRecord', { recordRef: "{record['ref']}" })} onChange={vi.fn()} />)
   fireEvent.click(screen.getByRole('button', { name: '高级：直接编辑参数' }))
   expect(JSON.parse((screen.getByLabelText('操作参数（JSON，值可引用变量）') as HTMLTextAreaElement).value)).toEqual({ recordRef: "{record['ref']}" })
+})
+
+function Harness({ initial, onData }: { initial: NodeData; onData?(data: NodeData): void }) {
+  const [data, setData] = useState(initial)
+  return <ProjectDataConfig data={data} onChange={(key, value) => setData(prev => { const next = { ...prev, [key]: value } as NodeData; onData?.(next); return next })} />
+}
+const latest = (datas: NodeData[]) => (datas.at(-1) as unknown as { arguments: Record<string, unknown> }).arguments
+
+test('typing a decimal keeps what the user typed while the saved value is a number', async () => {
+  const datas: NodeData[] = []
+  render(<Harness initial={nodeData('createRecord', { values: {} })} onData={d => datas.push(d)} />)
+  fireEvent.click(await screen.findByRole('button', { name: '添加字段' }))
+  await pick('写入字段 1', '次数')
+  const input = screen.getByLabelText('写入值 1') as HTMLInputElement
+  for (const text of ['0', '0.', '0.5']) { fireEvent.change(input, { target: { value: text } }); expect(input.value).toBe(text) }
+  expect(latest(datas).values).toEqual({ [uuid(2)]: 0.5 })
+  for (const text of ['1.0', '0.50']) { fireEvent.change(input, { target: { value: text } }); expect(input.value).toBe(text) }
+  expect(latest(datas).values).toEqual({ [uuid(2)]: 0.5 })
+})
+
+test('a condition value keeps the typed decimal text too', async () => {
+  const filter = { type: 'all', items: [{ type: 'compare', fieldId: uuid(2), operator: 'gt', value: 1 }] }
+  render(<Harness initial={nodeData('queryRecords', { filter })} />)
+  const input = (await screen.findByLabelText('比较值 1')) as HTMLInputElement
+  fireEvent.change(input, { target: { value: '2.' } })
+  expect(input.value).toBe('2.')
+})
+
+test('editing the arguments under advanced refreshes the form rows and later form edits keep it', async () => {
+  const datas: NodeData[] = []
+  render(<Harness initial={nodeData('createRecord', { values: { [uuid(1)]: '旧' } })} onData={d => datas.push(d)} />)
+  expect(((await screen.findByLabelText('写入值 1')) as HTMLInputElement).value).toBe('旧')
+  fireEvent.click(screen.getByRole('button', { name: '高级：直接编辑参数' }))
+  const area = screen.getByLabelText('操作参数（JSON，值可引用变量）')
+  fireEvent.change(area, { target: { value: JSON.stringify({ values: { [uuid(2)]: 9 }, extra: 'keep' }) } })
+  fireEvent.blur(area)
+  expect(((await screen.findByLabelText('写入值 1')) as HTMLInputElement).value).toBe('9')
+  fireEvent.click(screen.getByRole('button', { name: '添加字段' }))
+  await pick('写入字段 2', '结果')
+  expect(latest(datas)).toEqual({ values: { [uuid(2)]: 9, [uuid(1)]: '' }, extra: 'keep' })
+  fireEvent.change(screen.getByLabelText('写入值 2'), { target: { value: 'x' } })
+  expect(latest(datas)).toEqual({ values: { [uuid(2)]: 9, [uuid(1)]: 'x' }, extra: 'keep' })
+})
+
+test('a field already chosen in another row is not offered again', async () => {
+  render(<ProjectDataConfig data={nodeData('createRecord', { values: { [uuid(1)]: 'a' } })} onChange={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '添加字段' }))
+  fireEvent.keyDown(screen.getByLabelText('写入字段 2'), { key: 'ArrowDown' })
+  await screen.findByRole('option', { name: '次数' })
+  expect(screen.queryByRole('option', { name: '结果' })).toBeNull()
+})
+
+test('status form hides the field checkboxes and stores the choice without internal wording', async () => {
+  const change = vi.fn()
+  const args = { recordRef: "{record['ref']}", statusId: null, expectedStatusRevision: "{record['statusRevision']}" }
+  render(<ProjectDataConfig data={nodeData('setRecordStatus', args)} onChange={change} />)
+  await screen.findByLabelText('设置为')
+  expect(screen.queryByText('允许访问的字段')).toBeNull()
+  expect(screen.queryByRole('checkbox')).toBeNull()
+  await pick('设置为', '已完成')
+  expect(lastCall(change, 'tableGrant')).toMatchObject({ operations: ['setRecordStatus'], fieldIds: [] })
+  expect(lastCall(change, 'argumentsValid')).toBe(true)
+  expect(screen.queryByText(/项目$|数据表$/, { selector: 'button' })).toBeNull()
 })

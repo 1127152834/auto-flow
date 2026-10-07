@@ -1,8 +1,14 @@
 import { Database } from 'lucide-react'
-import { projectWriteDragData, projectWriteEntries } from '../lib/moduleCatalog'
+import { matchProjectWriteEntries, projectWriteDragData, type ProjectWriteEntry } from '../lib/moduleCatalog'
+import { useProjectInputs } from '../project-inputs'
 
-export function ProjectWriteEntries({ query }: { query: string }) {
-  const entries = projectWriteEntries.filter(entry => !query || entry.label.includes(query) || entry.description.includes(query) || '项目数据'.includes(query))
+/** Write-back entries for the current search; empty unless the workflow was opened from a project automation. */
+export function useProjectWriteEntries(query: string): readonly ProjectWriteEntry[] {
+  const inProject = useProjectInputs(state => state.automation !== null)
+  return inProject ? matchProjectWriteEntries(query) : []
+}
+
+export function ProjectWriteEntries({ entries }: { entries: readonly ProjectWriteEntry[] }) {
   if (entries.length === 0) return null
   return <div className="mb-2" data-testid="project-write-entries">
     <div className="px-2.5 py-1.5 text-[12px] font-semibold text-[hsl(var(--slate-800))]">项目数据</div>
