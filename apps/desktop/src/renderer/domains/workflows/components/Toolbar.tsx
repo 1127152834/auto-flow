@@ -7,7 +7,12 @@ import { describeUnknownSettings, findUnknownSettings } from '../lib/unknownConf
 import { requestSettingsClose } from '../lib/settingsLeave'
 import { saveCustomModuleEditing, restoreMainWorkflow, recoverCustomModuleEditing } from '../lib/customModuleEditing'
 import { useDraftProtection } from '../hooks/useDraftProtection'
-import { CalendarClock } from 'lucide-react'
+import { CalendarClock, Command as CommandIcon, LayoutList, Redo2, Undo2, Workflow } from 'lucide-react'
+import { isEnabled } from '../lib/featureFlags'
+import { TOOLBAR_HEIGHT } from '../lib/studioLayoutMetrics'
+import { buildStudioCommands, switchEditorView } from '../lib/studioCommands'
+import { useLayoutStore } from '../hooks/stores/layoutStore'
+import { CommandPalette } from './CommandPalette'
 import { findExcludedModuleType } from '../lib/moduleCatalog'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
 import { snapshotKey } from '../lib/snapshotKey'
@@ -166,6 +171,20 @@ export function Toolbar() {
   const autoLayoutNodes = useWorkflowStore((state) => state.autoLayoutNodes)
 
   const isRunning = executionStatus === 'running'
+  const [newLayout] = useState(() => isEnabled('newStudioLayout'))
+  const [showPalette, setShowPalette] = useState(false)
+  const [savingUi, setSavingUi] = useState(false)
+  const canUndo = useWorkflowStore(state => state.canUndo())
+  const canRedo = useWorkflowStore(state => state.canRedo())
+  const undo = useWorkflowStore(state => state.undo)
+  const redo = useWorkflowStore(state => state.redo)
+  const editorViewMode = useLayoutStore(state => state.editorViewMode)
+  useEffect(() => {
+    if (!newLayout) return
+    const open = () => setShowPalette(true)
+    window.addEventListener('studio:open-command-palette', open)
+    return () => window.removeEventListener('studio:open-command-palette', open)
+  }, [newLayout])
 
   useEffect(() => {
     let request = 0
@@ -245,6 +264,7 @@ export function Toolbar() {
   const handleSave = useCallback(async (skipConfirm = false) => {
     if (savingDocument.current || !mounted.current) return false
     savingDocument.current = true
+    setSavingUi(true)
     setSaveError(null)
     const revision = getStudioTransportRevision()
     const sourceDocument = useWorkflowStore.getState().id
@@ -279,7 +299,7 @@ export function Toolbar() {
         addLog({ level: 'error', message })
       }
       return false
-    } finally { savingDocument.current = false }
+    } finally { savingDocument.current = false; if (mounted.current) setSavingUi(false) }
   }, [workflowId, exportWorkflow, addLog, markAsSaved, setWorkflowId])
 
   // 通用执行函数
@@ -1336,6 +1356,379 @@ export function Toolbar() {
     if (await confirmLeave({ preserveMainDocument: true })) restoreMainWorkflow()
   }, [confirmLeave])
 
+  const runControls = (
+    <div className="flex items-center gap-1.5">
+      {startPhase ? <>
+        <span role="status" className="text-xs text-amber-700">{startPhase === 'preparing' ? '正在准备运行' : '等待启动确认'}</span>
+        {startPhase === 'awaiting' && <Button size="sm" variant="destructive" onClick={handleStop}>停止启动请求</Button>}
+      </> : !isRunning ? getStudioOpenContext().automationId ? (
+        <Button size="sm" variant="success" noMotion onClick={handleRun}>
+          <Play className="w-3.5 h-3.5" />
+          {hasUnsavedChanges ? '保存并运行一次' : '运行一次'}
+          <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">F5</span>
+        </Button>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant={newLayout ? 'outline' : 'success'} noMotion aria-label="运行 (F5)">
+              <Play className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{newLayout ? '试跑' : '运行'}</span>
+              <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">F5</span>
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-44">
+            <DropdownMenuItem onClick={handleRun}>
+              <Play className="w-3.5 h-3.5 mr-2 text-[hsl(var(--success-500))]" />
+              运行 (F5)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleRunHeadless}>
+              <EyeOff className="w-3.5 h-3.5 mr-2 text-[hsl(var(--muted-foreground))]" />
+              无头运行
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>浏览器追踪 · 随流程保存</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={traceMode} onValueChange={value => {
+              if (value === 'off' || value === 'standard' || value === 'enhanced') setTraceMode(value)
+            }}>
+              <DropdownMenuRadioItem value="off">关闭全程追踪</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="standard">标准：动作与页面证据</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="enhanced">增强：同时采集网页 JS</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <p className="px-2 py-1 text-xs text-muted-foreground">增强模式增加本地存储，仅采集实际可用源码。</p>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={handleStop}
+          noMotion
+        >
+          <Square className="w-3.5 h-3.5 fill-current" />
+          <span className="hidden sm:inline">停止</span>
+          <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">Shift+F5</span>
+        </Button>
+      )}
+    </div>
+  )
+
+  const dialogs = (
+    <>
+      {/* 全局配置对话框 */}
+      <GlobalConfigDialog isOpen={showGlobalConfig} onClose={() => setShowGlobalConfig(false)} />
+
+      {/* 企业控制中心（内嵌面板） */}
+      
+
+      {/* 工作流打包为 EXE */}
+      
+      
+      {/* 教学文档对话框（懒加载，仅在打开时才挂载/拉取代码；fallback 用骨架，不留白屏） */}
+      {showDocumentation && (
+        <Suspense
+          fallback={(
+            <div
+              className="fixed inset-0 bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] flex items-center justify-center p-4"
+              style={{ zIndex: 2147483646 }}
+              onClick={() => setShowDocumentation(false)}
+            >
+              <div className="modern-dialog w-full max-w-5xl h-[88vh] flex items-center justify-center text-[hsl(var(--muted-foreground))] text-sm">
+                正在加载教学文档…
+              </div>
+            </div>
+          )}
+        >
+          <DocumentationDialog isOpen={showDocumentation} onClose={() => setShowDocumentation(false)} />
+        </Suspense>
+      )}
+      
+      {/* 导出对话框 */}
+      <ExportDialog isOpen={showExportDialog} onClose={() => setShowExportDialog(false)} onExport={handleExport} />
+      
+      {/* 自动化浏览器对话框 */}
+      <AutoBrowserDialog 
+        isOpen={showAutoBrowser} 
+        onClose={() => setShowAutoBrowser(false)} 
+        onLog={handleBrowserLog}
+      />
+
+      {/* 智能录制器面板 */}
+      <RecorderPanel open={showRecorder} onClose={() => setShowRecorder(false)} />
+
+      {/* 桌面录制器面板 */}
+      
+
+      {/* 版本历史面板 */}
+      
+
+      {/* 工作流仓库对话框 */}
+      
+      
+      <WorkflowOpenDialog
+        beforeReplace={confirmLeave}
+        isOpen={showLocalWorkflow}
+        onClose={() => setShowLocalWorkflow(false)}
+        onOpened={id => setServerWorkflow({ documentId: id, id })}
+        onLog={(level, message) => addLog({ level, message })}
+      />
+
+      <LocalWorkflowDialog
+        beforeReplace={confirmLeave}
+        isOpen={showLocalFiles}
+        onClose={() => setShowLocalFiles(false)}
+        onLog={(level, message) => addLog({ level, message })}
+      />
+      
+      {/* 计划任务对话框 */}
+      <ScheduledTasksDialog open={showScheduledTasks} onClose={() => setShowScheduledTasks(false)} />
+      
+      
+      {/* 手机镜像对话框 */}
+      
+      
+      {/* 变量追踪面板 */}
+      <VariableTrackingPanel
+        workflowId={workflowId || ''}
+        runId={diagnosticRunId || undefined}
+        isOpen={showVariableTracking}
+        onClose={() => setShowVariableTracking(false)}
+      />
+
+      {/* 功能模块包管理 */}
+      
+
+      {/* 运行前缺少功能模块包提示（含下载入口 + 安装教学） */}
+      
+
+      {/* 屏保弹幕对话框 */}
+      
+
+      {/* 赞助与致谢对话框 */}
+      
+      
+      {/* 确认对话框 */}
+      <ConfirmDialog />
+      {draftDialog}
+      {/* 加密密码输入弹窗 */}
+      {passwordDialog}
+      
+      {/* 截图命名对话框 */}
+      {showScreenshotNameDialog && screenshotAsset && (
+        <ScreenshotNameDialog
+          defaultName={screenshotAsset.originalName}
+          onConfirm={handleScreenshotNameConfirm}
+          onCancel={handleScreenshotNameCancel}
+        />
+      )}
+
+      {/* 截图错误/重试对话框 */}
+      {screenshotError && (
+        <ScreenshotErrorDialog
+          error={screenshotError.error}
+          cancelled={screenshotError.cancelled}
+          onRetry={() => {
+            setScreenshotError(null)
+            doScreenshot()
+          }}
+          onCancel={() => setScreenshotError(null)}
+        />
+      )}
+
+      {/* 剪贴板图片保存对话框 */}
+      {showClipboardImageDialog && clipboardImageInfo && (
+        <ScreenshotNameDialog
+          defaultName={`剪贴板_${new Date().toLocaleTimeString()}`}
+          onConfirm={handleClipboardImageConfirm}
+          onCancel={handleClipboardImageCancel}
+        />
+      )}
+    </>
+  )
+
+  const commands = buildStudioCommands({
+    automation: Boolean(getStudioOpenContext().automationId),
+    importing: isImportingBundle,
+    canUndo,
+    canRedo,
+    viewMode: editorViewMode,
+    actions: {
+      newWorkflow: () => void handleNewWorkflowClick(),
+      save: () => void handleSave(),
+      open: handleOpen,
+      exportDialog: () => setShowExportDialog(true),
+      importBundle: handleImportBundle,
+      scheduledTasks: () => setShowScheduledTasks(true),
+      autoBrowser: () => setShowAutoBrowser(true),
+      recorder: () => setShowRecorder(true),
+      globalConfig: () => setShowGlobalConfig(true),
+      variableTracking: () => setShowVariableTracking(true),
+      documentation: () => setShowDocumentation(true),
+      assistant: toggleAIAssistant,
+      undo,
+      redo,
+      switchView: mode => void switchEditorView(mode),
+    },
+  })
+
+  const statusText = isRunning ? '运行中' : savingUi ? '保存中' : hasUnsavedChanges ? '未保存' : '已保存'
+  const automationMode = Boolean(getStudioOpenContext().automationId)
+  const alignItems = [
+    ['left', '左对齐'], ['center', '水平居中'], ['right', '右对齐'], ['top', '上对齐'], ['middle', '垂直居中'],
+    ['bottom', '下对齐'], ['distribute-horizontal', '水平均匀分布'], ['distribute-vertical', '垂直均匀分布'],
+  ] as const
+
+  if (newLayout) return (
+    <header
+      style={{ height: TOOLBAR_HEIGHT }}
+      className="relative border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-nowrap items-center px-3 gap-2 flex-shrink-0 shadow-soft"
+    >
+      <div className="flex flex-1 min-w-0 items-center gap-2">
+        {editingCustomModuleId && (
+          <>
+            <Button size="sm" variant="success" onClick={() => void handleSave()} title={`保存"${editingCustomModuleName}"的工作流`}>
+              <Save className="w-3.5 h-3.5" />
+              保存模块
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => void handleExitCustomModuleEdit()} title="退出编辑模式">
+              <X className="w-3.5 h-3.5" />
+              退出
+            </Button>
+          </>
+        )}
+        <Input
+          value={name}
+          onChange={(e) => setWorkflowName(e.target.value)}
+          onFocus={handleNameFocus}
+          onBlur={handleNameBlur}
+          className="w-32 @[64rem]:w-52 h-7 text-[12.5px] min-w-0"
+          placeholder="工作流名称"
+          aria-label="工作流名称"
+        />
+        <span data-testid="save-status" aria-live="polite" className="flex flex-shrink-0 items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+          <span
+            aria-hidden
+            className={cn(
+              'w-2 h-2 rounded-full flex-shrink-0',
+              isRunning ? 'bg-[hsl(var(--success-500))]' : savingUi || hasUnsavedChanges ? 'bg-[hsl(var(--warning-500))]' : 'bg-[hsl(var(--slate-300))]'
+            )}
+          />
+          {statusText}
+        </span>
+        {saveError?.documentId === documentId && (
+          <div role="alert" className="flex min-w-0 items-center gap-1 text-xs text-[hsl(var(--destructive))]">
+            <span className="truncate" title={saveError.message}>{saveError.message}</span>
+            <Button variant="ghost" size="sm" onClick={() => setSaveError(null)}>关闭保存提示</Button>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-shrink-0 items-center gap-1">
+        <Button variant="ghost" size="icon-sm" onClick={undo} disabled={!canUndo} aria-label="撤销" title="撤销 (Ctrl/Cmd+Z)">
+          <Undo2 className="w-4 h-4" />
+        </Button>
+        <Button variant="ghost" size="icon-sm" onClick={redo} disabled={!canRedo} aria-label="重做" title="重做 (Ctrl/Cmd+Shift+Z)">
+          <Redo2 className="w-4 h-4" />
+        </Button>
+        <div className="mx-1 h-5 w-px bg-[hsl(var(--border))]" />
+        <div className="flex items-center gap-0.5 rounded-control border border-[hsl(var(--border))] p-0.5">
+          {([['flow', '流程图', Workflow], ['block', '模块条', LayoutList]] as const).map(([mode, label, Icon]) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={editorViewMode === mode}
+              onClick={() => void switchEditorView(mode)}
+              className={cn(
+                'flex items-center gap-1 rounded-control px-2 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]',
+                editorViewMode === mode ? 'bg-[hsl(var(--brand-500))] text-white' : 'text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--brand-50))]'
+              )}
+            >
+              <Icon className="w-3.5 h-3.5" />{label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-1 min-w-0 items-center justify-end gap-1">
+        {runControls}
+        <div className="mx-1 h-5 w-px bg-[hsl(var(--border))]" />
+        <Button variant="outline" size="sm" onClick={handleNewWorkflowClick} disabled={automationMode} aria-label="新建" title="新建工作流 (Alt+N)">
+          <FilePlus className="w-4 h-4" /><span className="hidden @[80rem]:inline ml-1">新建</span>
+        </Button>
+        <Button variant="success" size="sm" onClick={() => void handleSave()} aria-label="保存" title="保存 (Ctrl/Cmd+S)">
+          <Save className="w-4 h-4" /><span className="hidden @[80rem]:inline ml-1">保存</span>
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleOpen} disabled={automationMode} aria-label="打开" title="打开">
+          <FolderOpen className="w-4 h-4" /><span className="hidden @[80rem]:inline ml-1">打开</span>
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setShowExportDialog(true)} aria-label="导出" title="导出">
+          <Code className="w-4 h-4" /><span className="hidden @[80rem]:inline ml-1">导出</span>
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleImportBundle} disabled={isImportingBundle || automationMode} aria-label="导入整包" title="导入整包">
+          <Package className="w-4 h-4" /><span className="hidden @[80rem]:inline ml-1">导入整包</span>
+        </Button>
+        <div className="mx-1 h-5 w-px bg-[hsl(var(--border))]" />
+        {showAIAssistantButton && (
+          <Button variant="outline" size="sm" title="AI 小助手 (Ctrl/Cmd+J)" aria-label="AI 小助手" onClick={toggleAIAssistant}>
+            <Sparkles className="w-4 h-4" />
+          </Button>
+        )}
+        <Button variant="outline" size="sm" title="命令面板 (Ctrl/Cmd+K)" aria-label="命令面板 (Ctrl/Cmd+K)" onClick={() => setShowPalette(true)}>
+          <CommandIcon className="w-4 h-4" />
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" title="更多操作" aria-label="更多操作">
+              <span className="hidden @[64rem]:inline">更多</span>
+              <MoreHorizontal className="w-4 h-4 @[64rem]:hidden" />
+              <ChevronDown className="w-3 h-3 hidden @[64rem]:inline" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => setShowScheduledTasks(true)}>
+              <CalendarClock className="w-4 h-4 mr-2" />计划任务
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowAutoBrowser(true)}>
+              <Globe className="w-4 h-4 mr-2" />自动化浏览器
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowRecorder(true)}>
+              <Video className="w-4 h-4 mr-2" />网页智能录制
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleAutoLayout} disabled={isAutoLayouting}>
+              <Sparkles className="w-4 h-4 mr-2" />{isAutoLayouting ? '整理中…' : '智能整理'}
+            </DropdownMenuItem>
+            <DropdownMenuLabel>节点对齐</DropdownMenuLabel>
+            {alignItems.map(([mode, label]) => (
+              <DropdownMenuItem key={mode} onClick={() => alignNodes(mode)}>
+                <AlignCenter className="w-4 h-4 mr-2" />{label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setShowGlobalConfig(true)}>
+              <Settings className="w-4 h-4 mr-2" />全局配置
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowVariableTracking(true)}>
+              <Activity className="w-4 h-4 mr-2" />变量追踪
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowLocalFiles(true)}>
+              <FolderOpen className="w-4 h-4 mr-2" />本地/远程工作流
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setShowDocumentation(true)}
+              onMouseEnter={() => { import('./documentation/index').catch(() => {}) }}
+            >
+              <BookOpen className="w-4 h-4 mr-2" />教学文档
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <CommandPalette open={showPalette} onOpenChange={setShowPalette} commands={commands} />
+      {dialogs}
+    </header>
+  )
+
   return (
     <header
       className="relative min-h-12 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-wrap items-center px-3 py-1.5 gap-2 @[48rem]:gap-3 flex-shrink-0 shadow-soft
@@ -1407,61 +1800,7 @@ export function Toolbar() {
 
       <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
 
-      {/* 执行控制 */}
-      <div className="flex items-center gap-1.5">
-        {startPhase ? <>
-          <span role="status" className="text-xs text-amber-700">{startPhase === 'preparing' ? '正在准备运行' : '等待启动确认'}</span>
-          {startPhase === 'awaiting' && <Button size="sm" variant="destructive" onClick={handleStop}>停止启动请求</Button>}
-        </> : !isRunning ? getStudioOpenContext().automationId ? (
-          <Button size="sm" variant="success" noMotion onClick={handleRun}>
-            <Play className="w-3.5 h-3.5" />
-            {hasUnsavedChanges ? '保存并运行一次' : '运行一次'}
-            <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">F5</span>
-          </Button>
-        ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="success" noMotion aria-label="运行 (F5)">
-                <Play className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">运行</span>
-                <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">F5</span>
-                <ChevronDown className="w-3 h-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuItem onClick={handleRun}>
-                <Play className="w-3.5 h-3.5 mr-2 text-[hsl(var(--success-500))]" />
-                运行 (F5)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleRunHeadless}>
-                <EyeOff className="w-3.5 h-3.5 mr-2 text-[hsl(var(--muted-foreground))]" />
-                无头运行
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>浏览器追踪 · 随流程保存</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={traceMode} onValueChange={value => {
-                if (value === 'off' || value === 'standard' || value === 'enhanced') setTraceMode(value)
-              }}>
-                <DropdownMenuRadioItem value="off">关闭全程追踪</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="standard">标准：动作与页面证据</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="enhanced">增强：同时采集网页 JS</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-              <p className="px-2 py-1 text-xs text-muted-foreground">增强模式增加本地存储，仅采集实际可用源码。</p>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={handleStop}
-            noMotion
-          >
-            <Square className="w-3.5 h-3.5 fill-current" />
-            <span className="hidden sm:inline">停止</span>
-            <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">Shift+F5</span>
-          </Button>
-        )}
-      </div>
+      {runControls}
 
       <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
 
@@ -1709,134 +2048,7 @@ export function Toolbar() {
         </DropdownMenu>
       </div>
 
-      {/* 全局配置对话框 */}
-      <GlobalConfigDialog isOpen={showGlobalConfig} onClose={() => setShowGlobalConfig(false)} />
-
-      {/* 企业控制中心（内嵌面板） */}
-      
-
-      {/* 工作流打包为 EXE */}
-      
-      
-      {/* 教学文档对话框（懒加载，仅在打开时才挂载/拉取代码；fallback 用骨架，不留白屏） */}
-      {showDocumentation && (
-        <Suspense
-          fallback={(
-            <div
-              className="fixed inset-0 bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] flex items-center justify-center p-4"
-              style={{ zIndex: 2147483646 }}
-              onClick={() => setShowDocumentation(false)}
-            >
-              <div className="modern-dialog w-full max-w-5xl h-[88vh] flex items-center justify-center text-[hsl(var(--muted-foreground))] text-sm">
-                正在加载教学文档…
-              </div>
-            </div>
-          )}
-        >
-          <DocumentationDialog isOpen={showDocumentation} onClose={() => setShowDocumentation(false)} />
-        </Suspense>
-      )}
-      
-      {/* 导出对话框 */}
-      <ExportDialog isOpen={showExportDialog} onClose={() => setShowExportDialog(false)} onExport={handleExport} />
-      
-      {/* 自动化浏览器对话框 */}
-      <AutoBrowserDialog 
-        isOpen={showAutoBrowser} 
-        onClose={() => setShowAutoBrowser(false)} 
-        onLog={handleBrowserLog}
-      />
-
-      {/* 智能录制器面板 */}
-      <RecorderPanel open={showRecorder} onClose={() => setShowRecorder(false)} />
-
-      {/* 桌面录制器面板 */}
-      
-
-      {/* 版本历史面板 */}
-      
-
-      {/* 工作流仓库对话框 */}
-      
-      
-      <WorkflowOpenDialog
-        beforeReplace={confirmLeave}
-        isOpen={showLocalWorkflow}
-        onClose={() => setShowLocalWorkflow(false)}
-        onOpened={id => setServerWorkflow({ documentId: id, id })}
-        onLog={(level, message) => addLog({ level, message })}
-      />
-
-      <LocalWorkflowDialog
-        beforeReplace={confirmLeave}
-        isOpen={showLocalFiles}
-        onClose={() => setShowLocalFiles(false)}
-        onLog={(level, message) => addLog({ level, message })}
-      />
-      
-      {/* 计划任务对话框 */}
-      <ScheduledTasksDialog open={showScheduledTasks} onClose={() => setShowScheduledTasks(false)} />
-      
-      
-      {/* 手机镜像对话框 */}
-      
-      
-      {/* 变量追踪面板 */}
-      <VariableTrackingPanel
-        workflowId={workflowId || ''}
-        runId={diagnosticRunId || undefined}
-        isOpen={showVariableTracking}
-        onClose={() => setShowVariableTracking(false)}
-      />
-
-      {/* 功能模块包管理 */}
-      
-
-      {/* 运行前缺少功能模块包提示（含下载入口 + 安装教学） */}
-      
-
-      {/* 屏保弹幕对话框 */}
-      
-
-      {/* 赞助与致谢对话框 */}
-      
-      
-      {/* 确认对话框 */}
-      <ConfirmDialog />
-      {draftDialog}
-      {/* 加密密码输入弹窗 */}
-      {passwordDialog}
-      
-      {/* 截图命名对话框 */}
-      {showScreenshotNameDialog && screenshotAsset && (
-        <ScreenshotNameDialog
-          defaultName={screenshotAsset.originalName}
-          onConfirm={handleScreenshotNameConfirm}
-          onCancel={handleScreenshotNameCancel}
-        />
-      )}
-
-      {/* 截图错误/重试对话框 */}
-      {screenshotError && (
-        <ScreenshotErrorDialog
-          error={screenshotError.error}
-          cancelled={screenshotError.cancelled}
-          onRetry={() => {
-            setScreenshotError(null)
-            doScreenshot()
-          }}
-          onCancel={() => setScreenshotError(null)}
-        />
-      )}
-
-      {/* 剪贴板图片保存对话框 */}
-      {showClipboardImageDialog && clipboardImageInfo && (
-        <ScreenshotNameDialog
-          defaultName={`剪贴板_${new Date().toLocaleTimeString()}`}
-          onConfirm={handleClipboardImageConfirm}
-          onCancel={handleClipboardImageCancel}
-        />
-      )}
+      {dialogs}
     </header>
   )
 }

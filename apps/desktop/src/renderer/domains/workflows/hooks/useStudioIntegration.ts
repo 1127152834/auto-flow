@@ -8,6 +8,7 @@ import { useWorkflowStore } from '../editor-store'
 import { socketService } from '../events'
 import { useGlobalConfigStore } from './stores/globalConfigStore'
 import { useAIAssistantStore } from './stores/aiAssistantStore'
+import { isEnabled } from '../lib/featureFlags'
 import { eventToCombo, SHORTCUT_ACTION_MAP } from '../lib/customShortcuts'
 
 export function useStudioIntegration() {
@@ -86,8 +87,15 @@ export function useStudioIntegration() {
   },[])
   useEffect(()=>{
     const handler=(event:KeyboardEvent)=>{
-      if((event.ctrlKey||event.metaKey)&&!event.altKey&&!event.shiftKey&&event.key.toLowerCase()==='k'){
-        event.preventDefault();useAIAssistantStore.getState().togglePanel();return
+      const key=event.key.toLowerCase()
+      if((event.ctrlKey||event.metaKey)&&!event.altKey&&!event.shiftKey&&(key==='k'||key==='j')){
+        const newLayout=isEnabled('newStudioLayout')
+        if(key==='k'||newLayout){
+          event.preventDefault()
+          if(newLayout&&key==='k')window.dispatchEvent(new CustomEvent('studio:open-command-palette'))
+          else useAIAssistantStore.getState().togglePanel()
+          return
+        }
       }
       const target=event.target
       if(target instanceof Element && target.closest('input,textarea,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'))return

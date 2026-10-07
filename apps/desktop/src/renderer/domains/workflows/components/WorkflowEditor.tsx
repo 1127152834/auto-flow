@@ -1630,7 +1630,7 @@ export function WorkflowEditor() {
           <DebugBar />
 
           {/* 视图模式切换：流程图 / 模块条（底部居中，避免与顶部搜索框重叠） */}
-          {canvasWidgets?.viewSwitch !== false && (
+          {!newLayout && canvasWidgets?.viewSwitch !== false && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 p-0.5 rounded-card bg-[hsl(var(--card))] border border-[hsl(var(--border))] shadow-pop">
             <button
               onClick={async () => {
