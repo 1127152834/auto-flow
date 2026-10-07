@@ -19,3 +19,4 @@
 | D25 | 运行总览：5B 的 Task 8 只做项目内指标行；跨项目聚合与全局导航一起放 5D | 避免与 R5-19 重复 |
 | D26 | 节点实际值来源：优先复用 `NodeAttemptView.executionContext` 与 output 事件 payload；缺才补后端字段，且必须后端脱敏，不得前端按字段名正则猜（现有 `/password|密码/` 打码改用 `sensitive` 标志） | 规则 2 与安全 |
 | D27 | 批次进度的 errorCode 只来自台账（last_outcome/last_error.code）；数据库固定为 SQLite（失败分组与占用查询使用 json_extract） | 与 D23 配套，换库时需重写这两处查询 |
+| D28 | CodeMirror 6 实测净增约 658KB（未压缩，studio chunk 3.60MB→4.27MB；仅 state+view 就 431KB），超过 D15 设定的 400KB 保险线。决定**接受**（规格 R5-13 指定 CodeMirror 6，Electron 本地加载无网络代价），但 `TagInput` 用 `React.lazy` 动态引入，CodeMirror 单独成块、只在 `tagInput` 开关开启时才加载，默认用户启动与解析成本不变；`VariableInput` 开关关闭时与原实现逐字节一致，开启但块尚未加载时回退为原生输入框。开关开启下约 63 项既有测试依赖原生输入框（占位符查询、`fireEvent.change`、label htmlFor），逐页适配后才可考虑默认开启 | 体积保险线是实施方自设的阈值；懒加载同时满足规格与"默认用户不受影响" |
