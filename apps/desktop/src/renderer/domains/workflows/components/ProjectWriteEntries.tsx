@@ -1,5 +1,6 @@
 import { Database } from 'lucide-react'
-import { matchProjectWriteEntries, projectWriteDragData, type ProjectWriteEntry } from '../lib/moduleCatalog'
+import { projectWriteDragData, type ProjectWriteEntry } from '../lib/moduleCatalog'
+import { matchProjectWriteEntries } from '../lib/projectWriteSearch'
 import { useProjectInputs } from '../project-inputs'
 
 /** Write-back entries for the current search; empty unless the workflow was opened from a project automation. */

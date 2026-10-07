@@ -1,6 +1,5 @@
 // WebRPA category data and approved AutoFlow scope; shared by UI and service adapters.
 import type { ModuleType } from '../types/index'
-import { moduleMatchesQuery } from './pinyin'
 
 const sourceModuleCategories = [
   { name: '代理控制', color: 'bg-teal-600', modules: ['proxy_change_ip', 'proxy_change_location', 'proxy_query'] as ModuleType[] },
@@ -350,9 +349,6 @@ export const projectWriteEntries: readonly ProjectWriteEntry[] = [
   { id: 'project_create_record', label: '新增记录', operation: 'createRecord', variableName: 'created_record', description: '在项目数据表里新增一行，适合把采集或注册得到的新账号、新结果批量录入' },
   { id: 'project_query_records', label: '查询记录', operation: 'queryRecords', variableName: 'found_records', description: '按条件查找项目数据表里的行，适合运行前筛选待处理的账号或核对已录入的结果' },
 ]
-/** Same matching as every other module search (Chinese, pinyin, initials, English, case-insensitive); "项目数据" shows all four. */
-export const matchProjectWriteEntries = (query: string): ProjectWriteEntry[] =>
-  projectWriteEntries.filter(entry => moduleMatchesQuery(query, { label: '项目数据', type: 'project_data' }) || moduleMatchesQuery(query, { label: entry.label, type: entry.operation }))
 export const projectWriteDefaults = (entry: ProjectWriteEntry) => ({ operation: entry.operation, arguments: {}, variableName: entry.variableName })
 export const projectWriteDragData = (entry: ProjectWriteEntry) => JSON.stringify({ type: 'project_write', entryId: entry.id })
 export function parseProjectWriteDrag(text: string): ProjectWriteEntry | null {
