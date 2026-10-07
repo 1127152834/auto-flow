@@ -26,6 +26,7 @@ import { useConfirm } from './controls/confirm-dialog'
 import { usePasswordPrompt } from './controls/password-prompt'
 import { ModuleNode } from './ModuleNode'
 import { QuickModulePicker, shouldOpenQuickPickerOnSlash } from './QuickModulePicker'
+import { connectToNewNode, resolveDragOutSource, useFailureFocus, type ConnectSource } from './quickConnect'
 import { getAllAvailableModules } from './ModuleSidebar'
 import { pinyinMatch } from '../lib/pinyin'
 import { useModuleStatsStore } from '../hooks/stores/moduleStatsStore'
@@ -364,7 +365,7 @@ export function WorkflowEditor() {
   // 快速模块选择器状态
   const [showQuickPicker, setShowQuickPicker] = useState(false)
   const [quickPickerPosition, setQuickPickerPosition] = useState({ x: 0, y: 0 })
-  const [quickPickerFavoritesOnly, setQuickPickerFavoritesOnly] = useState(false) // 是否仅显示收藏
+  const [quickPickerSource, setQuickPickerSource] = useState<ConnectSource | null>(null) // 连线拖到空白处时的来源
   
   // 远程协助状态
   const [remoteConnected, setRemoteConnected] = useState(false)
@@ -1319,7 +1320,6 @@ export function WorkflowEditor() {
         x: event.clientX,
         y: event.clientY
       })
-      setQuickPickerFavoritesOnly(false)
       setShowQuickPicker(true)
       lastPaneClickTimeRef.current = 0 // 重置，避免三击触发
     } else {
@@ -1338,7 +1338,6 @@ export function WorkflowEditor() {
       x: event.clientX,
       y: event.clientY
     })
-    setQuickPickerFavoritesOnly(false) // 显示所有模块
     setShowQuickPicker(true)
   }, [])
   
@@ -1353,7 +1352,6 @@ export function WorkflowEditor() {
         x: rect ? rect.left + rect.width / 2 : window.innerWidth / 2,
         y: rect ? rect.top + rect.height / 2 : window.innerHeight / 2,
       })
-      setQuickPickerFavoritesOnly(false)
       setShowQuickPicker(true)
     }
     window.addEventListener('keydown', onSlash)
@@ -1362,7 +1360,7 @@ export function WorkflowEditor() {
 
   // 处理快速模块选择
   const { incrementUsage } = useModuleStatsStore()
-  const handleQuickModuleSelect = useCallback((moduleType: ModuleType, customModuleId?: string) => {
+  const handleQuickModuleSelect = useCallback((moduleType: ModuleType, customModuleId?: string, source?: ConnectSource) => {
     if (reactFlowInstance.current) {
       const position = reactFlowInstance.current.screenToFlowPosition({
         x: quickPickerPosition.x,
@@ -1377,9 +1375,23 @@ export function WorkflowEditor() {
           addNode(moduleType, position)
         }
         incrementUsage(moduleType)
+        const newId = useWorkflowStore.getState().selectedNodeId
+        if (source && newId) connectToNewNode(source, newId, onConnect)
       }
     }
-  }, [quickPickerPosition, addNode, incrementUsage])
+  }, [quickPickerPosition, addNode, incrementUsage, onConnect])
+
+  // 连线从 source 句柄拖到空白画布：在释放位置弹出快速添加，选中后自动连线
+  const onConnectEnd = useCallback((event: MouseEvent | TouchEvent, state: Parameters<typeof resolveDragOutSource>[0]) => {
+    const source = resolveDragOutSource(state)
+    if (!source) return
+    const point = 'changedTouches' in event ? event.changedTouches[0] : event
+    setQuickPickerPosition({ x: point.clientX, y: point.clientY })
+    setQuickPickerSource(source)
+    setShowQuickPicker(true)
+  }, [])
+
+  const onMoveStart = useFailureFocus(reactFlowInstance, nodes, executionStatus)
 
   // 跟踪鼠标在画布中的位置（用于粘贴和远程协助）
   const onMouseMove = useCallback((event: React.MouseEvent) => {
@@ -1743,6 +1755,8 @@ export function WorkflowEditor() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onConnectEnd={onConnectEnd}
+            onMoveStart={onMoveStart}
             isValidConnection={isValidConnection}
             onInit={onInit}
             onDrop={onDrop}
@@ -1813,10 +1827,10 @@ export function WorkflowEditor() {
         <QuickModulePicker
           isOpen={showQuickPicker}
           position={quickPickerPosition}
-          onClose={() => setShowQuickPicker(false)}
+          source={quickPickerSource ?? undefined}
+          onClose={() => { setShowQuickPicker(false); setQuickPickerSource(null) }}
           onSelectModule={handleQuickModuleSelect}
           availableModules={getAllAvailableModules()}
-          favoritesOnly={quickPickerFavoritesOnly}
         />
       </div>
       

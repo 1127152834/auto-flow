@@ -15,12 +15,15 @@ import { useModuleStatsStore, QUICK_LIST_LIMIT } from '../hooks/stores/moduleSta
 import { moduleMatchesQuery } from '../lib/pinyin'
 import { moduleKeywords } from './ModuleSidebar'
 import type { ModuleType } from '../types/index'
+import type { ConnectSource } from './quickConnect'
 
 interface QuickModulePickerProps {
   isOpen: boolean
   position: { x: number; y: number }
   onClose: () => void
-  onSelectModule: (moduleType: ModuleType, customModuleId?: string) => void
+  /** 连线拖到空白处唤出时的来源节点与句柄；选择模块后原样带回 */
+  source?: ConnectSource
+  onSelectModule: (moduleType: ModuleType, customModuleId?: string, source?: ConnectSource) => void
   availableModules: Array<{
     type: ModuleType
     label: string
@@ -29,7 +32,6 @@ interface QuickModulePickerProps {
     isCustom?: boolean
     customModuleId?: string
   }>
-  favoritesOnly?: boolean
 }
 
 /** "/" 键是否应唤出快速添加面板：画布上无输入焦点、无修饰键、面板未打开 */
@@ -54,9 +56,9 @@ export function QuickModulePicker({
   isOpen,
   position,
   onClose,
+  source,
   onSelectModule,
   availableModules,
-  favoritesOnly = false,
 }: QuickModulePickerProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -109,9 +111,6 @@ export function QuickModulePicker({
 
     for (const [category, mods] of Object.entries(groupedByCategory)) {
       let list = mods
-      if (favoritesOnly) {
-        list = list.filter((m) => getStats(m.type).isFavorite)
-      }
       if (term) {
         list = list.filter((m) =>
           moduleMatchesQuery(term, {
@@ -127,15 +126,15 @@ export function QuickModulePicker({
       }
     }
     return result
-  }, [groupedByCategory, searchTerm, favoritesOnly, getStats, stats])
+  }, [groupedByCategory, searchTerm, stats])
 
   // 最近与常用：仅内置模块，空搜索时置顶
   const quickModules = useMemo(() => {
-    if (favoritesOnly || searchTerm.trim()) return []
+    if (searchTerm.trim()) return []
     const builtin = availableModules.filter((m) => !m.isCustom)
     const types = getQuickList(builtin.map((m) => m.type), QUICK_LIST_LIMIT)
     return types.map((type) => builtin.find((m) => m.type === type)!)
-  }, [availableModules, favoritesOnly, searchTerm, getQuickList, stats])
+  }, [availableModules, searchTerm, getQuickList, stats])
 
   // 方向键在搜索框与模块项之间移动焦点
   const handleArrowNav = (e: React.KeyboardEvent) => {
@@ -163,11 +162,11 @@ export function QuickModulePicker({
   }, [isOpen, position.x, position.y])
 
   const handleModuleClick = (module: typeof availableModules[number]) => {
-    if (module.isCustom && module.customModuleId) {
-      onSelectModule('custom_module' as ModuleType, module.customModuleId)
-    } else {
-      onSelectModule(module.type)
-    }
+    const type = module.isCustom && module.customModuleId ? ('custom_module' as ModuleType) : module.type
+    const customId = type === 'custom_module' ? module.customModuleId : undefined
+    if (source) onSelectModule(type, customId, source)
+    else if (customId) onSelectModule(type, customId)
+    else onSelectModule(type)
     onClose()
   }
 
@@ -240,7 +239,7 @@ export function QuickModulePicker({
         {/* 头部 */}
         <div className="flex items-center justify-between px-4 h-10 border-b border-[hsl(var(--border))]">
           <h3 className="text-[13px] font-semibold text-[hsl(var(--foreground))]">
-            {favoritesOnly ? '收藏的模块' : '快速添加模块'}
+            快速添加模块
           </h3>
           <button
             onClick={onClose}
@@ -279,16 +278,7 @@ export function QuickModulePicker({
           )}
           {filteredCategories.length === 0 ? (
             <div className="text-center py-12 text-[12.5px] text-[hsl(var(--muted-foreground))]">
-              {favoritesOnly ? (
-                <div className="space-y-2">
-                  <div>暂无收藏的模块</div>
-                  <div className="text-[11px]">
-                    点击模块右侧的 <Star className="w-3 h-3 inline" /> 图标可收藏
-                  </div>
-                </div>
-              ) : (
-                '无搜索结果'
-              )}
+              '无搜索结果'
             </div>
           ) : (
             filteredCategories.map(({ category, modules }) => (
@@ -306,9 +296,7 @@ export function QuickModulePicker({
 
         {/* 底部提示 */}
         <div className="px-3 py-2 border-t border-[hsl(var(--border))] text-[10.5px] text-[hsl(var(--muted-foreground))] text-center">
-          {favoritesOnly
-            ? '双击画布 = 收藏的模块 · 右键画布 = 全部模块'
-            : '支持拼音搜索 · 方向键选择 · Esc 关闭'}
+          支持拼音搜索 · 方向键选择 · Esc 关闭
         </div>
       </div>
     </>

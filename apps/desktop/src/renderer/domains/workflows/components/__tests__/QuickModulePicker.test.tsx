@@ -95,10 +95,11 @@ describe('QuickModulePicker', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('favoritesOnly 仍只显示收藏且不显示该区块', () => {
-    render({ favoritesOnly: true })
-    expect(quick()).toBeNull()
-    expect(container.textContent).toContain('暂无收藏的模块')
+  it('带来源节点与句柄时，选择结果原样带回来源', () => {
+    const source = { nodeId: 'n1', handleId: 'error' }
+    render({ source })
+    act(() => items(quick()!).find((e) => label(e) === '等待')!.click())
+    expect(onSelect).toHaveBeenCalledWith('delay', undefined, source)
   })
 
   it('键盘可达：模块项可聚焦，方向键在搜索框与列表间移动，Enter 选择', () => {
