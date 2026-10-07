@@ -1,6 +1,6 @@
 # M4 里程碑验收：身份模型与 perIdentity
 
-- 日期：2026-10-06；状态：confirmed（本机 Windows 范围）——AC4-01 至 AC4-07 均有可复现证据；已知限制与遗留见文末；macOS 由用户手动验证
+- 日期：2026-10-06；状态：confirmed（本机 Windows 范围，三平台 CI 通过）——AC4-01 至 AC4-07 均有可复现证据；已知限制与遗留见文末；macOS 由用户手动验证
 - 规格：[M4 规格](../specs/2026-09-30-remediation-m4-identity.md)；分支 codex/architecture-baseline
 - 环境：Windows 11、32 逻辑核、CloakBrowser chromium-146.0.7680.177.5（真实浏览器用例）
 - 决定：[模板种子与 perIdentity](../../../.ai/decisions/2026-10-05-m4-template-seed-and-per-identity.md)、
@@ -55,4 +55,8 @@
 5. **`project_manual` 节点与节点自带浏览器环境**不能与 perIdentity 同用（校验阻断）。
 6. **S9 界面改名（"身份模板"）与"标记身份状态"节点**随 M5 5C，未做；End 的业务结果引用变量目前没有配置界面入口。
 7. **AOCI 条目未维护**：本会话 aoci MCP 不可用；macOS 与 Windows 之外的平台由用户手动验证。
-8. CI：三平台后端全量回归通过；Windows/macOS Intel 上的桌面打包冒烟与时序用例的偶发失败见 [S10 记录](2026-10-04-remediation-m4-step-plan.md)。
+8. CI：提交 c4b9fc1c 的运行（37534140007）三个平台（windows-2022、macos-15、macos-15-intel）全部通过。
+   此前几轮在慢速的 macOS Intel 与 macOS ARM 上各出现过一次偶发失败（识别 worker 停止耗时 3.07 秒、设置面板真实服务用例、
+   打包冒烟的独立 Studio 窗口与重启后项目列表），同一代码再跑即通过，已放宽对应预算并加失败注解；
+   Studio 窗口超时现在会在错误里列出当时的窗口，若再复现可直接定位。另有一次 Windows 类型债务检查失败，
+   是并入的 Android 代码里一处多余的 `cast`，已删除。
