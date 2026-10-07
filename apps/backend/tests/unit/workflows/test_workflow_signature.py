@@ -67,3 +67,38 @@ async def test_project_runs_resolve_signature_references_and_mask_sensitive_valu
     assert executor.context.variables["secret"] == "s3cret"
     assert "secret" in executor.context.sensitive_variables and "who" not in executor.context.sensitive_variables
     assert "s3cret" not in repr(events)
+
+
+def _fields(*fields):
+    return {"inputs": [{"key": "g", "name": "组", "fields": list(fields)}]}
+
+
+def test_sample_values_are_checked_against_the_field_type():
+    signature, issues = parse_signature(_fields(
+        {"key": "a", "type": "string", "sample": "x"},
+        {"key": "b", "type": "number", "sample": 3.5},
+        {"key": "c", "type": "boolean", "sample": False},
+        {"key": "d", "type": "date", "sample": "2026-10-07"},
+        {"key": "e", "type": "any", "sample": 1},
+        {"key": "f", "type": "string"},
+    ))
+    assert issues == [] and signature is not None
+    fields = signature.input("g").fields
+    assert [field.sample for field in fields] == ["x", 3.5, False, "2026-10-07", 1, None]
+    _, bad = parse_signature(_fields(
+        {"key": "a", "type": "number", "sample": "abc"},
+        {"key": "b", "type": "number", "sample": True},
+        {"key": "c", "type": "boolean", "sample": "yes"},
+        {"key": "d", "type": "date", "sample": "明天"},
+        {"key": "e", "type": "string", "sample": 5},
+    ))
+    assert [issue.path for issue in bad] == [f"signature.inputs.0.fields.{i}.sample" for i in range(5)]
+    assert all("样例" in issue.message for issue in bad)
+
+
+def test_sensitive_fields_reject_samples():
+    _, issues = parse_signature(_fields({"key": "pw", "type": "string", "sensitive": True, "sample": "s3cret"}))
+    assert [issue.path for issue in issues] == ["signature.inputs.0.fields.0.sample"]
+    assert "敏感" in issues[0].message and "s3cret" not in issues[0].message
+    signature, ok = parse_signature(_fields({"key": "pw", "type": "string", "sensitive": True}))
+    assert ok == [] and signature.input("g").field("pw").sample is None

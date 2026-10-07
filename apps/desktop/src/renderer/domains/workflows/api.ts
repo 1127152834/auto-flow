@@ -235,6 +235,8 @@ export const workflowApi = {
     if (result.success) rememberWorkflow(result.data, 1)
     return result
   },
+  /** Why a stored signature cannot be read (catalog view); empty when it parsed or none is declared. */
+  signatureIssues: (id: string) => apiRequest<{ signatureIssues?: { path: string; message: string }[] }>(`/v1/workflows/${id}`),
   create: async (data: any) => {
     const projectId = getStudioOpenContext().projectId
     const scopedData = projectId ? { ...data, projectId } : data

@@ -15152,6 +15152,8 @@ export type components = {
             /** Browserenvironmentversion */
             browserEnvironmentVersion?: number | null;
             signature?: components["schemas"]["WorkflowSignature"] | null;
+            /** Signatureissues */
+            signatureIssues?: components["schemas"]["WorkflowSignatureIssue"][];
             validation: components["schemas"]["WorkflowCatalogValidation"];
             /**
              * Createdat
@@ -15188,6 +15190,8 @@ export type components = {
             /** Browserenvironmentversion */
             browserEnvironmentVersion?: number | null;
             signature?: components["schemas"]["WorkflowSignature"] | null;
+            /** Signatureissues */
+            signatureIssues?: components["schemas"]["WorkflowSignatureIssue"][];
             validation: components["schemas"]["WorkflowCatalogValidation"];
             /**
              * Createdat
@@ -15293,6 +15297,8 @@ export type components = {
             required: boolean;
             /** Sensitive */
             sensitive: boolean;
+            /** Sample */
+            sample?: string | number | boolean | null;
         };
         /** WorkflowSignatureInput */
         WorkflowSignatureInput: {
@@ -15302,6 +15308,13 @@ export type components = {
             name: string;
             /** Fields */
             fields: components["schemas"]["WorkflowSignatureField"][];
+        };
+        /** WorkflowSignatureIssue */
+        WorkflowSignatureIssue: {
+            /** Path */
+            path: string;
+            /** Message */
+            message: string;
         };
         /** WorkflowStopRequest */
         WorkflowStopRequest: {

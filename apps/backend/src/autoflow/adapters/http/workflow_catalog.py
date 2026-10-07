@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Query
+from pydantic import Field
 
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.workflows.models import (
@@ -38,6 +39,8 @@ class WorkflowSignatureField(ApiModel):
     type: Literal["string", "number", "boolean", "date", "any"]
     required: bool
     sensitive: bool
+    # Remediation M5 5B-A3: optional example value; never returned for sensitive fields.
+    sample: str | int | float | bool | None = None
 
 
 class WorkflowSignatureInput(ApiModel):
@@ -50,6 +53,11 @@ class WorkflowSignature(ApiModel):
     inputs: list[WorkflowSignatureInput]
 
 
+class WorkflowSignatureIssue(ApiModel):
+    path: str
+    message: str
+
+
 class WorkflowCatalogItem(ApiModel):
     workflow_id: str
     name: str
@@ -58,6 +66,8 @@ class WorkflowCatalogItem(ApiModel):
     browser_environment_version: int | None = None
     # Remediation M2 R2-18: the inputs a workflow needs, for binding automation data; None when undeclared.
     signature: WorkflowSignature | None = None
+    # Why ``signature`` is None despite one being stored; empty when it parsed (or none is declared).
+    signature_issues: list[WorkflowSignatureIssue] = Field(default_factory=list)
     validation: WorkflowCatalogValidation
     created_at: datetime
     updated_at: datetime
@@ -126,11 +136,12 @@ def _item(record: WorkflowRecord) -> WorkflowCatalogItem:
         checksum=hashlib.sha256(canonical_json(record.document).encode()).hexdigest(),
         signature=WorkflowSignature(inputs=[
             WorkflowSignatureInput(key=item.key, name=item.name, fields=[
-                WorkflowSignatureField(key=field.key, name=field.name, type=field.type, required=field.required, sensitive=field.sensitive)  # type: ignore[arg-type]
+                WorkflowSignatureField(key=field.key, name=field.name, type=field.type, required=field.required, sensitive=field.sensitive, sample=None if field.sensitive else field.sample)  # type: ignore[arg-type]
                 for field in item.fields
             ])
             for item in signature.inputs
         ]) if signature is not None and not signature_issues else None,
+        signature_issues=[WorkflowSignatureIssue(path=issue.path, message=issue.message) for issue in signature_issues],
         validation=WorkflowCatalogValidation(
             status="ready" if runnable else "blocked",
             runnable=runnable,

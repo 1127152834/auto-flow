@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
 # Same kinds as project table fields; "any" accepts every field type.
@@ -29,6 +30,7 @@ class SignatureField:
     type: str
     required: bool
     sensitive: bool
+    sample: str | int | float | bool | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +64,26 @@ class Reference:
     text: str
     group: str | None
     field: str | None
+
+
+def _sample_problem(kind: str, sample: Any) -> str | None:
+    number = isinstance(sample, (int, float)) and not isinstance(sample, bool)
+    if kind == "string" and not isinstance(sample, str):
+        return "样例值需要是文本"
+    if kind == "number" and not number:
+        return "样例值需要是数字"
+    if kind == "boolean" and not isinstance(sample, bool):
+        return "样例值需要是“是”或“否”"
+    if kind == "date":
+        try:
+            date.fromisoformat(sample) if isinstance(sample, str) else None
+        except ValueError:
+            return "样例值需要是 年-月-日 格式的日期"
+        if not isinstance(sample, str):
+            return "样例值需要是 年-月-日 格式的日期"
+    if kind == "any" and not (isinstance(sample, (str, bool)) or number):
+        return "样例值需要是文本、数字或“是/否”"
+    return None
 
 
 def _text(value: Any) -> str | None:
@@ -101,9 +123,15 @@ def parse_signature(raw: Any) -> tuple[Signature | None, list[SignatureIssue]]:
             if kind not in FIELD_TYPES:
                 issues.append(SignatureIssue(f"{field_path}.type", "字段类型不受支持"))
                 continue
+            sensitive, sample = field.get("sensitive") is True, field.get("sample")
+            if sample is not None:
+                problem = "敏感字段不能保存样例值" if sensitive else _sample_problem(str(kind), sample)
+                if problem is not None:
+                    issues.append(SignatureIssue(f"{field_path}.sample", problem))
+                    sample = None
             fields.append(SignatureField(
                 field_key, _text(field.get("name")) or field_key, str(kind),
-                field.get("required") is True, field.get("sensitive") is True,
+                field.get("required") is True, sensitive, sample,
             ))
         if key is not None and KEY.match(key):
             inputs.append(SignatureInput(key, name or key, tuple(fields)))

@@ -10,6 +10,7 @@ import { useGlobalConfigStore } from './hooks/stores/globalConfigStore'
 import { layoutGraph } from './lib/elkLayout'
 import { collectNodeVarNames, getModuleConfigDefaults, MATH_DEFAULT_VARS } from './lib/moduleDefaultVars'
 import { snapshotKey } from './lib/snapshotKey'
+import { useSignatureStore } from './hooks/stores/signatureStore'
 
 let latestLayoutRequest = 0
 
@@ -3275,6 +3276,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   clearWorkflow: () => {
+    useSignatureStore.getState().reset()
     set({
       id: nanoid(),
       name: '未命名工作流',
@@ -3299,6 +3301,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   loadWorkflow: (workflow) => {
+    useSignatureStore.getState().load((workflow as { signature?: unknown }).signature)
     // 全部走 sanitizer，防止脏数据让 react-flow 崩溃白屏
     const safeNodes = sanitizeNodes(workflow.nodes)
     const safeEdges = sanitizeEdges(workflow.edges)
@@ -3357,6 +3360,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   markAsSaved: () => {
+    useSignatureStore.getState().markSaved()
     set({ hasUnsavedChanges: false })
   },
 
@@ -3385,6 +3389,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       }
     })
     
+    const signature = useSignatureStore.getState().serialize()
     const workflow = {
       id: state.id,
       ...(state.browserEnvironmentVersion !== undefined ? {schemaVersion: 3} : {}),
@@ -3395,6 +3400,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: convertedNodes,
       edges: state.edges,
       variables: state.variables,
+      ...(signature ? { signature } : {}),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -3461,6 +3467,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       const safeNodes = sanitizeNodes(convertedNodes)
       const safeEdges = sanitizeEdges(workflow.edges)
 
+      useSignatureStore.getState().load(workflow.signature)
       set({
         id: workflow.id || nanoid(),
         name: workflow.name || '导入的工作流',
@@ -3808,3 +3815,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     }
   },
 }))
+
+// Editing the signature is an unsaved change of the workflow document.
+useSignatureStore.subscribe(state => { if (state.dirty && !useWorkflowStore.getState().hasUnsavedChanges) useWorkflowStore.setState({ hasUnsavedChanges: true }) })

@@ -11,6 +11,7 @@ from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.workflows.models import canonical_json
 from autoflow.infrastructure.database.models import Base
 from autoflow.infrastructure.database.session import create_session_factory
+from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from tests.fixtures.workflows import workflow_payload
 
@@ -66,6 +67,7 @@ def test_list_and_detail_return_stored_identity_checksum_and_real_validation(tmp
         "revision": ready_record.revision,
         "browserEnvironmentVersion": None,
         "signature": None,
+        "signatureIssues": [],
         "checksum": hashlib.sha256(
             canonical_json(ready_record.document).encode()
         ).hexdigest(),
@@ -85,3 +87,37 @@ def test_invalid_workflow_id_uses_read_error_contract(tmp_path):
     invalid = api.get("/api/v1/workflows/not-a-uuid")
     assert invalid.status_code == 422
     assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def _with_signature(service, signature):
+    record = service.create(workflow_payload(str(uuid4())), str(uuid4()))
+    with service._repository._session_factory.begin() as session:
+        row = session.get(WorkflowDocumentRow, record.workflow_id)
+        row.document = {**row.document, "content": {**row.document["content"], "signature": signature}}
+    return record
+
+
+def test_signature_exposes_samples_but_never_for_sensitive_fields(tmp_path):
+    api, service = client(tmp_path)
+    record = _with_signature(service, {"inputs": [{"key": "account", "name": "账号", "fields": [
+        {"key": "user", "name": "用户名", "type": "string", "sample": "alice"},
+        {"key": "age", "name": "年龄", "type": "number"},
+    ]}]})
+    body = api.get(f"/api/v1/workflows/{record.workflow_id}").json()
+    assert body["signatureIssues"] == []
+    fields = body["signature"]["inputs"][0]["fields"]
+    assert fields[0]["sample"] == "alice" and fields[1]["sample"] is None
+
+
+def test_unparseable_signature_is_reported_instead_of_looking_absent(tmp_path):
+    api, service = client(tmp_path)
+    record = _with_signature(service, {"inputs": [{"key": "account", "name": "账号", "fields": [
+        {"key": "pw", "type": "string", "sensitive": True, "sample": "s3cret"},
+        {"key": "n", "type": "number", "sample": "abc"},
+    ]}]})
+    body = api.get(f"/api/v1/workflows/{record.workflow_id}").json()
+    assert body["signature"] is None
+    assert [issue["path"] for issue in body["signatureIssues"]] == [
+        "signature.inputs.0.fields.0.sample", "signature.inputs.0.fields.1.sample"]
+    assert all(issue["message"] for issue in body["signatureIssues"])
+    assert "s3cret" not in api.get(f"/api/v1/workflows/{record.workflow_id}").text
