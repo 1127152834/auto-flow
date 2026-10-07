@@ -19,12 +19,18 @@ interface LayoutState {
   aiAssistantWidth: number
   /** 编辑器视图模式：流程图 / 模块条（影刀式线性） */
   editorViewMode: 'flow' | 'block'
+  /** 左侧模块面板是否折叠（新布局；开关关闭时不被读取） */
+  leftCollapsed: boolean
+  /** 底部面板模式：状态条 / 展开（默认展开，保持旧行为） */
+  bottomMode: 'status' | 'expanded'
 
   setLeftWidth: (w: number) => void
   setRightWidth: (w: number) => void
   setBottomHeight: (h: number) => void
   setAiAssistantWidth: (w: number) => void
   setEditorViewMode: (m: 'flow' | 'block') => void
+  setLeftCollapsed: (c: boolean) => void
+  setBottomMode: (m: 'status' | 'expanded') => void
   resetLayout: () => void
 }
 
@@ -33,6 +39,8 @@ const DEFAULTS = {
   rightWidth: 320,   // w-80
   bottomHeight: 256, // h-64
   aiAssistantWidth: 440,
+  leftCollapsed: false,
+  bottomMode: 'expanded' as 'status' | 'expanded',
 }
 
 const LIMITS = {
@@ -52,19 +60,26 @@ export const useLayoutStore = create<LayoutState>()(
       bottomHeight: DEFAULTS.bottomHeight,
       aiAssistantWidth: DEFAULTS.aiAssistantWidth,
       editorViewMode: 'flow',
+      leftCollapsed: DEFAULTS.leftCollapsed,
+      bottomMode: DEFAULTS.bottomMode,
       setLeftWidth: (w) => set({ leftWidth: clamp(w, LIMITS.left.min, LIMITS.left.max) }),
       setRightWidth: (w) => set({ rightWidth: clamp(w, LIMITS.right.min, LIMITS.right.max) }),
       setBottomHeight: (h) => set({ bottomHeight: clamp(h, LIMITS.bottom.min, LIMITS.bottom.max) }),
       setAiAssistantWidth: (w) => set({ aiAssistantWidth: clamp(w, LIMITS.aiAssistant.min, LIMITS.aiAssistant.max) }),
       setEditorViewMode: (m) => set({ editorViewMode: m }),
+      setLeftCollapsed: (c) => set({ leftCollapsed: c }),
+      setBottomMode: (m) => set({ bottomMode: m }),
       resetLayout: () => set({ ...DEFAULTS }),
     }),
     {
       name: 'autoflow.studio.mock.editor.layout',
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
+      // v1 -> v2：只补新字段，已有宽度原样保留（persist 随后与当前默认值浅合并）
+      migrate: (persisted) => persisted as LayoutState,
     },
   ),
 )
 
 export const LAYOUT_LIMITS = LIMITS
+export const LAYOUT_DEFAULTS = DEFAULTS
