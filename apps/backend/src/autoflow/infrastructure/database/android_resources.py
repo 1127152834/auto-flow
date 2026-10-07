@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from copy import deepcopy
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.android.ports import AndroidError
@@ -23,8 +23,9 @@ class AndroidResourceRepository:
 
     def list(self, kind: str) -> list[dict[str, Any]]:
         with self.sessions() as session:
+            # rowid keeps insertion order for items created within one clock tick (Windows ticks are ~15.6 ms)
             rows = session.scalars(
-                select(AndroidResourceRow).where(AndroidResourceRow.kind == kind)
+                select(AndroidResourceRow).where(AndroidResourceRow.kind == kind).order_by(text("rowid"))
             )
             return sorted(
                 (deepcopy(row.payload) for row in rows),
