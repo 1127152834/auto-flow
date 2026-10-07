@@ -17,6 +17,7 @@ import '@xyflow/react/dist/style.css'
 import { Keyboard, ChevronDown, ChevronUp, FileJson, AlertTriangle, Boxes, Search, X, LayoutList, Workflow } from 'lucide-react'
 
 import { getNodeConfigData, useWorkflowStore, type NodeData } from '../editor-store'
+import { parseProjectWriteDrag, projectWriteDefaults } from '../lib/moduleCatalog'
 import { DebugBar } from './DebugBar'
 import { useLayoutStore } from '../hooks/stores/layoutStore'
 import { useGlobalConfigStore, resolveMinimapVisible } from '../hooks/stores/globalConfigStore'
@@ -1217,6 +1218,11 @@ export function WorkflowEditor() {
       // 自定义模块拖拽时传的是 JSON 字符串；普通模块传的是模块类型字符串（如 "wait"）。
       // 只有看起来像 JSON（以 { 开头）才尝试解析，避免对普通模块名做 JSON.parse 抛错刷控制台。
       const trimmed = dataStr.trim()
+      const writeEntry = parseProjectWriteDrag(trimmed)
+      if (writeEntry) {
+        addNode('project_data' as ModuleType, position, projectWriteDefaults(writeEntry) as unknown as Partial<NodeData>)
+        return
+      }
       if (trimmed.startsWith('{')) {
         try {
           const data = JSON.parse(trimmed)

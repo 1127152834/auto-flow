@@ -337,6 +337,25 @@ export const excludedModuleTypes = new Set<ModuleType>([
   'notify_matrix', 'notify_rocketchat',
 ])
 export const diagnosticModuleTypes: ModuleType[] = ['trace_mark', 'capture_diagnostics', 'save_trace_segment']
+/**
+ * Write-back entries shown in the module library. They are project_data nodes with a preset operation,
+ * not new node types; the generic project_data entry stays so old workflows keep opening.
+ * Scenarios served: batch entry (批量录入) and multi-account operation (多账号运营).
+ */
+export interface ProjectWriteEntry { id: string; label: string; operation: string; description: string; variableName: string }
+export const projectWriteEntries: readonly ProjectWriteEntry[] = [
+  { id: 'project_update_record', label: '更新当前记录', operation: 'updateRecord', variableName: 'updated_record', description: '把本次处理结果写回当前这一行，适合批量录入后回填结果、多账号运营中记录每个账号的执行情况' },
+  { id: 'project_set_status', label: '设置状态', operation: 'setRecordStatus', variableName: 'status_result', description: '把当前记录标记为已完成、失败等业务状态，下次批量运行可据此跳过已处理的行' },
+  { id: 'project_create_record', label: '新增记录', operation: 'createRecord', variableName: 'created_record', description: '在项目数据表里新增一行，适合把采集或注册得到的新账号、新结果批量录入' },
+  { id: 'project_query_records', label: '查询记录', operation: 'queryRecords', variableName: 'found_records', description: '按条件查找项目数据表里的行，适合运行前筛选待处理的账号或核对已录入的结果' },
+]
+export const projectWriteDefaults = (entry: ProjectWriteEntry) => ({ operation: entry.operation, arguments: {}, variableName: entry.variableName })
+export const projectWriteDragData = (entry: ProjectWriteEntry) => JSON.stringify({ type: 'project_write', entryId: entry.id })
+export function parseProjectWriteDrag(text: string): ProjectWriteEntry | null {
+  if (!text.trim().startsWith('{')) return null
+  try { const parsed = JSON.parse(text); return parsed?.type === 'project_write' ? projectWriteEntries.find(entry => entry.id === parsed.entryId) ?? null : null } catch { return null }
+}
+
 export const moduleCategories = [{ name: '浏览器诊断', color: 'bg-amber-600', modules: diagnosticModuleTypes }, { name: '项目能力', color: 'bg-teal-500', modules: ['project_data', 'project_manual', 'project_end'] as ModuleType[] }, ...sourceModuleCategories
   .filter(c => !excludedCategories.has(c.name))
   .map(c => ({ ...c, modules: c.modules.filter(type => !excludedModuleTypes.has(type)) }))]

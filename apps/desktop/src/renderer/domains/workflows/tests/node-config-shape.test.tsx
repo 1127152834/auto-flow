@@ -69,7 +69,7 @@ it('reads and edits nested runtime config without overwriting outer editor metad
   expect(store.getState().importWorkflow(nestedDocument())).toBe(true)
   render(<ConfigPanel selectedNodeId="end" />)
 
-  expect((screen.getByRole('checkbox', { name: '保留当前环境并关联记录' }) as HTMLInputElement).checked).toBe(true)
+  expect((screen.getByRole('checkbox', { name: '保留当前身份的登录状态' }) as HTMLInputElement).checked).toBe(true)
   expect((screen.getByLabelText('节点备注') as HTMLInputElement).value).toBe('外层节点备注')
   expect((screen.getByLabelText('新环境名称') as HTMLInputElement).value).toBe('运行环境名称')
 

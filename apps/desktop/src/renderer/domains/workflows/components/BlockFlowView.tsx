@@ -9,6 +9,7 @@ import { useMemo, useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type React from 'react'
 import { getNodeConfigData, useWorkflowStore, moduleTypeLabels, type NodeData, type ErrorPolicy } from '../editor-store'
+import { parseProjectWriteDrag, projectWriteDefaults } from '../lib/moduleCatalog'
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { moduleIcons, moduleCategories, moduleKeywords } from './ModuleSidebar'
 import { getBlockRowColorClasses } from './moduleColors'
@@ -195,6 +196,8 @@ export function BlockFlowView() {
   // 解析拖拽数据 → {type, extra}
   const parseDrag = (dataStr: string): { type: ModuleType; extra?: Partial<NodeData> } | null => {
     if (!dataStr) return null
+    const writeEntry = parseProjectWriteDrag(dataStr)
+    if (writeEntry) return { type: 'project_data' as ModuleType, extra: projectWriteDefaults(writeEntry) as unknown as Partial<NodeData> }
     try {
       const parsed = JSON.parse(dataStr)
       if (parsed && parsed.type === 'custom_module' && parsed.moduleId) {

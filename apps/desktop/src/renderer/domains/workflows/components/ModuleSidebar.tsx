@@ -198,6 +198,7 @@ import {
 import { TestReportIcon } from './icons/TestReportIcon'
 import { PanelResizer } from './PanelResizer'
 import { DataSidebar } from './DataSidebar'
+import { ProjectWriteEntries } from './ProjectWriteEntries'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
 import { isEnabled } from '../lib/featureFlags'
 
@@ -2123,6 +2124,7 @@ function ModuleSidebarRaw() {
           
           {activeTab === 'builtin' ? (
             <ScrollArea className="flex-1 p-2">
+              <ProjectWriteEntries query={searchQuery.trim()} />
               {filteredCategories.length === 0 ? (
                 <div className="empty-state animate-fade-in">
                   <div className="empty-state-icon">

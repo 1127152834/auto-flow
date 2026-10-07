@@ -33,12 +33,12 @@ function successfulResponse(path: string) {
 test('freezes the canonical table grant generation and only explicitly selected fields', async () => {
   request.mockImplementation(async (path: string) => successfulResponse(path))
   const change = vi.fn()
-  render(<ProjectDataConfig data={data} onChange={change} />)
+  render(<ProjectDataConfig data={{ ...data, operation: 'readRecord' } as NodeData} onChange={change} />)
   fireEvent.click(await screen.findByRole('checkbox', { name: /结果/ }))
-  expect(change).toHaveBeenCalledWith('tableGrant', { tableId: 'table', datasetGeneration: 'generation', operations: ['updateRecord'], fieldIds: ['field'], readPurposes: ['condition', 'derivedWrite'] })
+  expect(change).toHaveBeenCalledWith('tableGrant', { tableId: 'table', datasetGeneration: 'generation', operations: ['readRecord'], fieldIds: ['field'], readPurposes: ['condition', 'derivedWrite'] })
   fireEvent.keyDown(screen.getByLabelText('授权数据表'), { key: 'ArrowDown' })
   fireEvent.keyDown(await screen.findByRole('option', { name: '另一张表' }), { key: 'Enter' })
-  expect(change).toHaveBeenCalledWith('tableGrant', { tableId: 'other', datasetGeneration: 'other-generation', operations: ['updateRecord'], fieldIds: [], readPurposes: ['condition', 'derivedWrite'] })
+  expect(change).toHaveBeenCalledWith('tableGrant', { tableId: 'other', datasetGeneration: 'other-generation', operations: ['readRecord'], fieldIds: [], readPurposes: ['condition', 'derivedWrite'] })
 })
 
 test('rejects fields from a changed dataset without rewriting the saved canonical grant', async () => {

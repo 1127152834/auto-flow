@@ -7,9 +7,11 @@ import type { NodeData } from '../../editor-store'
 import { VariableInput } from '../controls/variable-input'
 import { SelectNative as Select } from '../controls/select-native'
 import { Label } from '../controls/label'
+import { ConditionRows, FieldValueRows, ReturnFields } from './ProjectDataForms'
 
 type Schema = components['schemas']
-const operations = { inputs: '读取本次任务输入', readRecord: '读取记录', queryRecords: '查询记录', queryTableSchema: '查询表结构', createRecord: '创建记录', updateRecord: '更新记录', deleteRecord: '删除记录', setRecordStatus: '设置记录状态' }
+const operations = { inputs: '读取本次任务输入', readRecord: '读取记录', queryRecords: '查询记录', queryTableSchema: '查询表结构', createRecord: '新增记录', updateRecord: '更新当前记录', deleteRecord: '删除记录', setRecordStatus: '设置状态' }
+const formOperations = ['createRecord', 'updateRecord', 'setRecordStatus', 'queryRecords']
 // Remediation M2 R2-23: runs no longer change table structure; old nodes keep their saved operation.
 const structureOperations: Record<string, string> = { addField: '添加字段', ensureField: '确保字段存在', modifyField: '修改字段', previewFieldChange: '预览字段变更', previewFieldDeletion: '预览字段删除', deleteField: '删除字段' }
 
@@ -18,7 +20,6 @@ const readPurposes = (operation: string) => operation === 'queryTableSchema' ? [
 export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange(key: string, value: unknown): void }) {
   const automation = useProjectInputs(state => state.automation)
   const operation = String(data.operation ?? 'inputs')
-  const currentInput = automation?.inputPlan.inputs.find(input => input.inputId === data.currentInputId)
   const projectId = String(data.bindingProjectId ?? '')
   const grant = data.tableGrant as { tableId: string; datasetGeneration: string; fieldIds: string[] } | undefined
   const tableId = grant?.tableId ?? ''
@@ -35,6 +36,15 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
   const [revision, refresh] = useState(0)
   const argumentsValue = data.arguments as Record<string, unknown> | undefined
   const retired = structureOperations[operation]
+  const isForm = formOperations.includes(operation)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  function writeForm(patch: Record<string, unknown>, fieldIds: string[]) {
+    onChange('argumentsValid', true)
+    onChange('arguments', { ...argumentsValue, ...patch })
+    if (grant) onChange('tableGrant', { ...grant, operations: [operation], readPurposes: readPurposes(operation), fieldIds })
+  }
+  const returned = Array.isArray(argumentsValue?.fieldIds) ? argumentsValue.fieldIds.filter((id): id is string => typeof id === 'string') : []
+  const filterFieldIds = (filter: Record<string, unknown> | null) => ((filter?.items as { fieldId: string }[] | undefined) ?? []).map(item => item.fieldId)
   useEffect(() => {
     const reload = () => { setProjects([]); setTables([]); setFields([]); setStatuses([]); refresh(value => value + 1) }
     window.addEventListener('studio:transport-changed', reload)
@@ -99,7 +109,7 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     }}>{retired ? <option value={operation} disabled>{retired}（已停用）</option> : null}{Object.entries(operations).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select>
     {retired ? <p role="alert" className="text-sm text-danger">运行中不再修改表结构，请在项目「数据」页维护字段，然后把这个节点改为读取或写入记录，或删除它。</p> : null}
     {automation && ['readRecord', 'updateRecord', 'setRecordStatus'].includes(operation) && <><Label htmlFor="project-current-input">当前输入对象</Label><Select id="project-current-input" value={String(data.currentInputId ?? '')} onChange={event => selectInput(event.target.value)}><option value="">选择本次任务的输入对象</option>{automation.inputPlan.inputs.map(input => <option key={input.inputId} value={input.inputId}>{input.alias}</option>)}</Select></>}
-    {currentInput && operation === 'setRecordStatus' && <><Label htmlFor="project-input-status">保存业务状态</Label><Select id="project-input-status" value={String(argumentsValue?.statusId ?? '')} onChange={event => onChange('arguments', { ...argumentsValue, statusId: event.target.value || null })}><option value="">未设置</option>{statuses.map(status => <option key={status.statusId} value={status.statusId}>{status.name}</option>)}</Select></>}
+    {tableId && operation === 'setRecordStatus' && <><Label htmlFor="project-input-status">设置为</Label><Select id="project-input-status" value={String(argumentsValue?.statusId ?? '')} onChange={event => onChange('arguments', { ...argumentsValue, statusId: event.target.value || null })}><option value="">未设置</option>{statuses.map(status => <option key={status.statusId} value={status.statusId}>{status.name}</option>)}</Select></>}
     {operation !== 'inputs' && <>
       <Label htmlFor="project-data-project">所属项目</Label>
       <Select id="project-data-project" value={projectId} onChange={event => { setTablePage(1); onChange('currentInputId', undefined); onChange('bindingProjectId', event.target.value); onChange('tableGrant', undefined); onChange('arguments', {}) }}>
@@ -111,20 +121,29 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
         <option value="">选择数据表</option>{tables.map(table => <option key={table.tableId} value={table.tableId}>{table.name}</option>)}
       </Select>
       <div className="flex gap-2"><button type="button" disabled={tablePage === 1} onClick={() => setTablePage(value => value - 1)}>上一页数据表</button><span>第 {tablePage} 页</span><button type="button" disabled={tablePage * 100 >= tableTotal} onClick={() => setTablePage(value => value + 1)}>下一页数据表</button></div>
-      {fields.length > 0 && <fieldset><legend>允许访问的字段</legend>{fields.map(field => <label className="flex gap-2" key={field.ref.fieldId}>
+      {tableId && fields.length > 0 && operation === 'createRecord' && <><Label>写入内容</Label><FieldValueRows key={tableId} fields={fields} value={argumentsValue?.values} onChange={values => writeForm({ values }, Object.keys(values))} /></>}
+      {tableId && fields.length > 0 && operation === 'updateRecord' && <><Label>更新内容</Label><FieldValueRows key={tableId} fields={fields} value={argumentsValue?.changes} onChange={changes => writeForm({ changes }, Object.keys(changes))} /></>}
+      {tableId && fields.length > 0 && operation === 'queryRecords' && <>
+        <Label>查询条件</Label><ConditionRows key={tableId} fields={fields} filter={argumentsValue?.filter} onChange={filter => writeForm({ filter }, [...new Set([...returned, ...filterFieldIds(filter)])])} />
+        <ReturnFields fields={fields} selected={returned} onChange={ids => writeForm({ fieldIds: ids }, [...new Set([...ids, ...filterFieldIds(conditionsFilter(argumentsValue?.filter))])])} />
+      </>}
+      {!isForm && fields.length > 0 && <fieldset><legend>允许访问的字段</legend>{fields.map(field => <label className="flex gap-2" key={field.ref.fieldId}>
         <input type="checkbox" checked={grant?.fieldIds.includes(field.ref.fieldId) ?? false} onChange={event => {
           const fieldIds = event.target.checked ? [...(grant?.fieldIds ?? []), field.ref.fieldId] : (grant?.fieldIds ?? []).filter(id => id !== field.ref.fieldId)
           onChange('tableGrant', { ...grant, operations: [operation], readPurposes: readPurposes(operation), fieldIds })
           if (operation === 'readRecord' || operation === 'queryRecords' || operation === 'queryTableSchema') onChange('arguments', { ...(data.arguments as Record<string, unknown>), fieldIds })
-        }} />{field.name} <code className="break-all text-xs">{field.ref.fieldId}</code>
+        }} />{field.name}
       </label>)}</fieldset>}
-      <Arguments key={JSON.stringify(data.arguments)} value={data.arguments} onChange={value => { onChange('argumentsValid', true); onChange('arguments', value) }} onInvalid={() => onChange('argumentsValid', false)} />
+      {<button type="button" className="text-sm underline" aria-expanded={showAdvanced} onClick={() => setShowAdvanced(value => !value)}>高级：直接编辑参数</button>}
+      {showAdvanced && <Arguments key={JSON.stringify(data.arguments)} value={data.arguments} onChange={value => { onChange('argumentsValid', true); onChange('arguments', value) }} onInvalid={() => onChange('argumentsValid', false)} />}
     </>}
     {error && <p role="alert">{error} <button type="button" onClick={() => refresh(value => value + 1)}>重试</button></p>}
     <Label htmlFor="project-data-result">结果变量</Label>
     <VariableInput id="project-data-result" value={String(data.variableName ?? '')} onChange={value => onChange('variableName', value)} placeholder="例如 saved_record" />
   </div>
 }
+
+const conditionsFilter = (filter: unknown) => filter && typeof filter === 'object' && Array.isArray((filter as { items?: unknown }).items) ? filter as Record<string, unknown> : null
 
 function Arguments({ value, onChange, onInvalid }: { value: unknown; onChange(value: Record<string, unknown>): void; onInvalid(): void }) {
   const [text, setText] = useState(JSON.stringify(value ?? {}, null, 2))
