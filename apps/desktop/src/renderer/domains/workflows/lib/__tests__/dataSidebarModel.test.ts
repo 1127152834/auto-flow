@@ -82,4 +82,16 @@ describe('dataSidebarModel', () => {
     const all = [...m.inputs, ...m.nodeOutputs, ...m.variables]
     expect(referencesInNode(nodes[3], all).sort()).toEqual(['{count}', '{input.账号.phone}', '{node.n1.variableName}'])
   })
+
+  it('含引号或反斜杠的引用串也能匹配到节点', () => {
+    const tricky = [node('q1', '打印', 'print_log', { message: 'say "{a\b}" now' })]
+    expect(nodesReferencing(tricky, '"{a\b}"')).toEqual(['q1'])
+    expect(referencesInNode(tricky[0], [{ ...model().variables[0], copyText: '"{a\b}"' }])).toEqual(['"{a\b}"'])
+  })
+
+  it('节点标题为空时节点输出回退到模块中文名', () => {
+    const rows = buildDataSidebar({ signature: [], nodes: [node('e1', '', 'get_element_info')], edges: [], variables: [], credentials: [] }).nodeOutputs
+    expect(rows[0].title).toMatch(/^[^·]+·/)
+    expect(rows[0].source).not.toBe('')
+  })
 })

@@ -80,6 +80,17 @@ describe('DataSidebar', () => {
     expect(screen.getByRole('tooltip').textContent).not.toContain('13800000000')
   })
 
+  it('提示按 Esc 可关闭，且是浮层不占行流', () => {
+    loadSignature()
+    render(<DataSidebar />)
+    const row = screen.getByRole('button', { name: /手机号/ })
+    fireEvent.focus(row)
+    const tip = screen.getByRole('tooltip')
+    expect(tip.className).toContain('absolute')
+    fireEvent.keyDown(row, { key: 'Escape' })
+    expect(screen.queryByRole('tooltip')).toBeNull()
+  })
+
   it('点击复制引用并提示（role=status），键盘可达', async () => {
     loadSignature()
     render(<DataSidebar />)

@@ -7,7 +7,7 @@ from uuid import uuid4
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.project_run_progress import project_run_progress_router
@@ -17,6 +17,7 @@ from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.infrastructure.database.project_data_models import DataTableRow
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
+    ProjectTaskInputSnapshotRow,
     ProjectTaskRow,
 )
 from autoflow.infrastructure.database.record_ledger_models import (
@@ -103,6 +104,18 @@ def test_running_task_shows_row_display_name_and_elapsed_time(env):
     assert task["displayName"] == "张三"
     assert task["identityName"] is None
     assert 85 <= task["elapsedSeconds"] <= 200
+
+
+def test_running_task_without_input_snapshot_is_still_listed(env):
+    client, factory, project_id, _automation, batch_id = env
+    with factory.begin() as session:
+        run = session.scalar(select(WorkflowRunRow))
+        run.status, run.started_at = "running", datetime.now(UTC) - timedelta(seconds=30)
+        session.execute(delete(ProjectTaskInputSnapshotRow))
+    body = client.get(f"/api/v1/projects/{project_id}/batches/{batch_id}/progress").json()
+    (task,) = body["runningTasks"]
+    assert task["displayName"] is None
+    assert body["ledger"]["running"] == len(body["runningTasks"])
 
 
 def test_throughput_and_eta_follow_finished_tasks(env):

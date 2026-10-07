@@ -5,6 +5,10 @@ in a worker thread while the event-loop heartbeat runs, so the loop lag it cause
 
 Budget: median 110-190 ms and slowest-of-30 140-600 ms at 10,000 rows on the dev machine (Windows, SQLite);
 the 2000 ms default is 3-4x the worst slowest call, leaving room for slow CI machines.
+The budget applies to the slowest of the 30 calls, not to a multiple of the median: one cold or GC-hit call must
+still pass, while a real regression (per-row queries) is orders of magnitude slower.
+The loop_lag p50 bound (25 ms) is looser than the 10 ms target for idle loops because the worker thread holds the
+GIL while it builds the result; the max bound (250 ms) is what catches a blocked loop.
 
 Run: uv run --directory apps/backend python -m tests.benchmarks.bench_batch_progress --rows 10000
 """

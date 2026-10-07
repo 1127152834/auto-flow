@@ -18,3 +18,4 @@
 | D24 | 缩略图：先降级为"最近一张已有截图并标明非实时"，不新增 5 秒周期帧接口；Phase B 末尾再评估是否新增轻量最近一帧接口（限频、etag、仅可见时拉取） | 现有证据模型只有错误/结果截图 artifact |
 | D25 | 运行总览：5B 的 Task 8 只做项目内指标行；跨项目聚合与全局导航一起放 5D | 避免与 R5-19 重复 |
 | D26 | 节点实际值来源：优先复用 `NodeAttemptView.executionContext` 与 output 事件 payload；缺才补后端字段，且必须后端脱敏，不得前端按字段名正则猜（现有 `/password|密码/` 打码改用 `sensitive` 标志） | 规则 2 与安全 |
+| D27 | 批次进度的 errorCode 只来自台账（last_outcome/last_error.code）；数据库固定为 SQLite（失败分组与占用查询使用 json_extract） | 与 D23 配套，换库时需重写这两处查询 |

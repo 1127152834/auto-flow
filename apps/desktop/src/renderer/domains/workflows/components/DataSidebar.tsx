@@ -80,11 +80,11 @@ export function DataSidebar() {
               const open = active === row.key
               const highlighted = used.has(row.copyText)
               return (
-                <li key={row.key}>
+                <li key={row.key} className="relative">
                   {row.subgroup && row.subgroup !== section.rows[index - 1]?.subgroup && <div className="px-1 pt-1 text-[10.5px] text-[hsl(var(--muted-foreground))]">{row.subgroup}</div>}
                   <button
                     type="button" onClick={() => void copy(row)} aria-describedby={open ? tipId : undefined} data-highlighted={highlighted ? 'true' : undefined}
-                    onMouseEnter={() => setActive(row.key)} onMouseLeave={() => setActive(null)} onFocus={() => setActive(row.key)} onBlur={() => setActive(null)}
+                    onMouseEnter={() => setActive(row.key)} onMouseLeave={() => setActive(null)} onFocus={() => setActive(row.key)} onBlur={() => setActive(null)} onKeyDown={e => { if (e.key === 'Escape' && open) { e.stopPropagation(); setActive(null) } }}
                     className={`flex w-full items-center gap-1.5 rounded-control px-2 py-1 text-left text-[12px] hover:bg-[hsl(var(--brand-50))] focus-visible:bg-[hsl(var(--brand-50))] ${highlighted ? 'bg-[hsl(var(--brand-50))] ring-1 ring-[hsl(var(--brand-500)/0.5)]' : ''}`}
                   >
                     <span className="min-w-0 flex-1 truncate">{row.title}{row.group === 'credentials' && row.description && <span className="block truncate text-[11px] text-[hsl(var(--muted-foreground))]">{row.description}</span>}</span>
@@ -93,7 +93,7 @@ export function DataSidebar() {
                     {row.type && <span className={CHIP}>{row.type}</span>}
                   </button>
                   {open && (
-                    <div id={tipId} role="tooltip" className="mx-1 mb-1 rounded-control border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1 text-[11px] leading-snug text-[hsl(var(--muted-foreground))]">
+                    <div id={tipId} role="tooltip" className="pointer-events-none absolute inset-x-1 top-full z-20 rounded-control border !border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1 shadow-md text-[11px] leading-snug text-[hsl(var(--muted-foreground))]">
                       {row.type && <div>类型：{row.type}</div>}
                       <div>来源：{row.source}</div>
                       {row.sample !== undefined && <div>样例：{row.sample}</div>}

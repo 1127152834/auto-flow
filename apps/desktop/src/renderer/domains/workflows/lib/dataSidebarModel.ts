@@ -1,5 +1,6 @@
 // Data sidebar model (R5-13): signature inputs, node outputs, global variables and credentials as plain rows.
 // Rows carry the reference text a click copies; selectors tell which canvas nodes use which row.
+import { moduleTypeLabels } from '../editor-store'
 import { SENSITIVE_SAMPLE_MASK } from './dataReferences'
 import { declaredOutputs, outputAvailability } from './nodeOutputs'
 import type { SignatureInputDraft } from './signatureDocument'
@@ -40,7 +41,7 @@ function show(value: unknown) {
 }
 
 function nodeTitles(nodes: DataNode[]) {
-  const titleOf = (node: DataNode) => isRecord(node.data) ? String(node.data.label || node.data.name || node.data.moduleType || '') : ''
+  const titleOf = (node: DataNode) => isRecord(node.data) ? String(node.data.label || node.data.name || (moduleTypeLabels as Record<string, string>)[String(node.data.moduleType)] || node.data.moduleType || '') : ''
   const total = new Map<string, number>()
   for (const node of nodes) total.set(titleOf(node), (total.get(titleOf(node)) ?? 0) + 1)
   const seen = new Map<string, number>()
@@ -104,15 +105,20 @@ export function filterRows(rows: DataRow[], query: string) {
   return rows.filter(row => [row.title, row.subgroup, row.source, row.description].some(text => text?.toLowerCase().includes(needle)))
 }
 
-const textOf = (node: DataNode) => JSON.stringify(node.data ?? null)
+// Match against the string leaves of the node data, so quotes or backslashes in a reference are not JSON-escaped away.
+function mentions(value: unknown, text: string): boolean {
+  if (typeof value === 'string') return value.includes(text)
+  if (Array.isArray(value)) return value.some(item => mentions(item, text))
+  if (isRecord(value)) return Object.values(value).some(item => mentions(item, text))
+  return false
+}
 
 /** Ids of canvas nodes whose settings use this reference text. */
 export function nodesReferencing(nodes: DataNode[], reference: string) {
-  return nodes.filter(node => textOf(node).includes(reference)).map(node => node.id)
+  return nodes.filter(node => mentions(node.data, reference)).map(node => node.id)
 }
 
 /** Reference texts of the given rows that this node uses. */
 export function referencesInNode(node: DataNode, rows: DataRow[]) {
-  const text = textOf(node)
-  return rows.filter(row => row.isReference && text.includes(row.copyText)).map(row => row.copyText)
+  return rows.filter(row => row.isReference && mentions(node.data, row.copyText)).map(row => row.copyText)
 }

@@ -127,7 +127,7 @@ def _running(session: Session, batch: ProjectBatchRow, now: datetime) -> list[di
         select(ProjectTaskRow.id, ProjectTaskRow.run_id, WorkflowRunRow.started_at, WorkflowRunRow.resource_request,
                ProjectTaskInputSnapshotRow.inputs)
         .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
-        .join(ProjectTaskInputSnapshotRow, ProjectTaskInputSnapshotRow.task_id == ProjectTaskRow.id)
+        .outerjoin(ProjectTaskInputSnapshotRow, ProjectTaskInputSnapshotRow.task_id == ProjectTaskRow.id)
         .where(ProjectTaskRow.batch_id == batch.id, WorkflowRunRow.status.not_in(TERMINAL_STATUSES))
         .order_by(WorkflowRunRow.started_at.is_(None), WorkflowRunRow.started_at, ProjectTaskRow.ordinal)
         .limit(MAX_RUNNING_TASKS)
