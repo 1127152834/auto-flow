@@ -5,7 +5,7 @@ import { ApiClientError } from '../../shared/api/client'
 const id = 'ab806c63-6b08-460b-bd2a-f3f6d2b07116'
 it('preserves actionable import cell details with one-based display columns', () => {
   const error = { code: 'INVALID_PROJECT_DATA', details: { rowNumber: 2, columnIndex: 1, field: 'bytes', rule: 'type', reason: 'must be a finite JSON-safe number', path: '/private/secret.xlsx' } }
-  expect(safeProjectError(error)).toBe('第 2 行，第 2 列，字段「bytes」：必须是有限的 JSON 安全数字')
+  expect(safeProjectError(error)).toBe('第 2 行，第 2 列，字段「bytes」：必须是有效数字')
   expect(safeProjectError({ ...error, details: { ...error.details, columnIndex: 0 } })).toContain('第 1 列')
   expect(safeProjectError({ ...error, details: { ...error.details, reason: id } })).toBe('第 2 行，第 2 列，字段「bytes」：字段类型不符合要求')
   expect(safeProjectError({ ...error, details: { ...error.details, rowNumber: -1, columnIndex: 1.5, field: '/private/secret', rule: id, reason: id } })).toBe('填写内容有误，请检查后重试')

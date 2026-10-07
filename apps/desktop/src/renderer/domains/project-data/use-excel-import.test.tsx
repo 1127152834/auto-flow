@@ -71,7 +71,7 @@ it('restores the persisted cell error after a new service instance without repea
   const api = { startImport: vi.fn(), replace: vi.fn(), lookupImport: vi.fn().mockResolvedValue(failed) }
   const hook = renderHook(() => useExcelImport({ api: api as never, scopeKey: 'w:p', contextKey: 'restarted', active: true }))
   await waitFor(() => expect(hook.result.current.phase).toBe('failed'))
-  expect(hook.result.current.error).toBe('第 2 行，第 2 列，字段「bytes」：必须是有限的 JSON 安全数字')
+  expect(hook.result.current.error).toBe('第 2 行，第 2 列，字段「bytes」：必须是有效数字')
   expect(api.startImport).not.toHaveBeenCalled()
   expect(api.lookupImport).toHaveBeenCalledWith('original', expect.any(Function), undefined)
 })

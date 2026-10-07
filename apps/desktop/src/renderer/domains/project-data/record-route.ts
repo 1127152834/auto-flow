@@ -19,7 +19,7 @@ function validateRecordKey(key: RecordKey): RecordKey {
     if (length === 0 || length > 8000) throw new Error('文本记录键长度无效')
   } else if (key.type === 'integer') {
     if (!/^(?:0|-[1-9]\d*|[1-9]\d*)$/.test(key.value) || !Number.isSafeInteger(Number(key.value)) || String(Number(key.value)) !== key.value) throw new Error('整数记录键必须是规范安全整数')
-  } else if (!uuidPattern.test(key.value)) throw new Error('UUID 记录键必须是小写标准格式')
+  } else if (!uuidPattern.test(key.value)) throw new Error('系统编号记录键必须是小写标准格式')
   return key
 }
 

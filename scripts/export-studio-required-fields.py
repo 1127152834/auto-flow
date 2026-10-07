@@ -52,7 +52,7 @@ NATIVE_SCHEMAS['project_end'] = {
     'desc': {
         'retainEnvironment': '环境保留策略',
         'name': '新环境名称',
-        'recordTargets': '新增或已写记录的 RecordRef 列表',
+        'recordTargets': '新增或已写记录的数据行列表',
     },
 }
 

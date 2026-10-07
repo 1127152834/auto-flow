@@ -116,6 +116,8 @@ jobs:
       - run: npm run test:scripts
       - name: Ratchet checks (debt may only shrink)
         run: node scripts/ratchets.mjs
+      - name: Copy lint (no internal terms in user-facing text)
+        run: node scripts/copy-lint.mjs
       - run: npm run lint
       - run: npm run openapi:check
       - run: uv run --directory apps/backend ruff check .

@@ -90,7 +90,7 @@ test('213 frozen entries plus 5 native entries cover the exact approved scope', 
     inputs: [],
   }}
   expected.fieldLabels.project_data = {bindingProjectId:'绑定项目', tableGrant:'授权数据表和字段', arguments:'操作参数', operation:'项目数据操作', variableName:'结果变量'}
-  expected.fieldLabels.project_end = {retainEnvironment: '环境保留策略', name: '新环境名称', recordTargets: '新增或已写记录的 RecordRef 列表'}
+  expected.fieldLabels.project_end = {retainEnvironment: '环境保留策略', name: '新环境名称', recordTargets: '新增或已写记录的数据行列表'}
   for (const name of ['requiredFields','conditionalRequired','fieldLabels']) assert.deepEqual(data[name], expected[name])
   for (const excluded of Object.keys(schemas).filter(name => !approved.includes(name))) {
     assert.ok(!data.coveredModules.includes(excluded), `${excluded} must not reappear`)

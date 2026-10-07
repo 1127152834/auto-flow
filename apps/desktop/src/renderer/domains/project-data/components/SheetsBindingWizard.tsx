@@ -130,7 +130,7 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
 
   const blocking = inspection ? inspection.issues.filter(issue => issue.code !== 'SHEETS_COLUMN_MISSING' && !(identityKind === 'system' && issue.code.startsWith('SHEETS_IDENTITY_'))) : []
 
-  return <Modal open={open} onOpenChange={next => { if (!next) onClose() }} title={`绑定 Google Sheets · ${table.name}`} description="本地表与一张工作表建立映射；普通绑定不修改来源；系统身份初始化会新增身份列并写入 UUID。" size="large" closeDisabled={busy}>
+  return <Modal open={open} onOpenChange={next => { if (!next) onClose() }} title={`绑定 Google Sheets · ${table.name}`} description="本地表与一张工作表建立映射；普通绑定不修改来源；系统身份初始化会新增身份列并写入系统编号。" size="large" closeDisabled={busy}>
     <div className="grid gap-5">
       <SheetsConnectionPanel api={api} scopeKey={scopeKey} readonly={readonly} disabled={disabled} selectedId={connection} onSelect={setConnection} />
       <section className="grid gap-3" aria-label="选择工作表">
@@ -150,7 +150,7 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
       {inspection ? <>
         <section className="grid gap-3" aria-label="来源检查结果">
           <h4 className="text-lg font-semibold">来源检查</h4>
-          <p className="m-0 text-sm">表头 {inspection.columns.length} 列；身份列 {identityKind === 'system' ? '将在绑定时核验系统归属及 UUID' : inspection.identitySummary.unique ? '唯一' : '存在问题'}（缺失 {inspection.identitySummary.missing}，重复 {inspection.identitySummary.duplicates}）。</p>
+          <p className="m-0 text-sm">表头 {inspection.columns.length} 列；身份列 {identityKind === 'system' ? '将在绑定时核验系统归属及系统编号' : inspection.identitySummary.unique ? '唯一' : '存在问题'}（缺失 {inspection.identitySummary.missing}，重复 {inspection.identitySummary.duplicates}）。</p>
           {inspection.issues.length > 0 ? <ul className="m-0 grid gap-1 pl-5 text-sm text-warning">{inspection.issues.map((issue, index) => <li key={`${issue.code}-${index}`}>{issue.message}</li>)}</ul> : <p className="m-0 text-sm text-success">没有发现问题。</p>}
           {inspection.overlaps.length > 0 ? <ul className="m-0 grid gap-1 pl-5 text-sm text-clay">{inspection.overlaps.map(overlap => <li key={overlap.tableId}>来源列 {overlap.columnIds.join('、')} 同时被另一张表（{overlap.tableId}）使用。</li>)}</ul> : null}
         </section>
@@ -158,7 +158,7 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
           <h4 className="text-lg font-semibold">字段与身份映射</h4>
           <label className="grid max-w-72 gap-1 text-sm"><span>身份策略</span>
             <select aria-label="身份策略" value={identityKind} disabled={blocked || busy} onChange={event => setIdentityKind(event.target.value as 'column' | 'system')}>
-              <option value="column">按映射文本字段识别</option><option value="system">复用已验证系统 UUID 列</option>
+              <option value="column">按映射文本字段识别</option><option value="system">复用已验证系统编号列</option>
             </select>
           </label>
           <label className="grid max-w-72 gap-1 text-sm"><span>{identityKind === 'column' ? '身份列（必须映射到文本字段）' : '已有系统身份列（不映射为业务字段）'}</span>

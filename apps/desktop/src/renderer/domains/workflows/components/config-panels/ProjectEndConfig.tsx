@@ -27,7 +27,7 @@ export function ProjectEndConfig({ data, onChange }: { data: NodeData; onChange:
       <div className="space-y-2"><Label htmlFor={`${id}-inputs`}>关联输入标识（逗号分隔）</Label>
         <input id={`${id}-inputs`} className="w-full rounded border bg-background px-2 py-1" value={Array.isArray(data.inputIds) ? data.inputIds.join(',') : '*'} onChange={event => onChange('inputIds', event.target.value.trim() === '*' ? null : event.target.value.split(',').map(value => value.trim()).filter(Boolean))} />
         <p className="text-xs text-muted-foreground">* 表示本任务全部可写输入；清空表示不关联输入。纯查询记录不具备关联写权。</p></div>
-      <div className="space-y-2"><Label htmlFor={`${id}-targets`}>新增或已写记录的 RecordRef 列表</Label>
+      <div className="space-y-2"><Label htmlFor={`${id}-targets`}>新增或已写记录的数据行列表</Label>
         {staticTargets ? <>
           <textarea id={`${id}-targets`} aria-label="静态记录目标" className="w-full rounded border bg-muted px-2 py-1 font-mono text-xs" rows={4} readOnly value={JSON.stringify(staticTargets, null, 2)} />
           <button type="button" className="text-xs text-destructive underline" onClick={() => onChange('recordTargets', [])}>清空记录目标</button>

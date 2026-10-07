@@ -49,9 +49,9 @@ export function SheetsIdentityInitialization({ api, scopeKey, tableId, disabled,
     if (report.blockers.length) throw new Error(report.blockers.map(blocker => blocker.message).join(' '))
     return (retry ? api.retryIdentity : api.verifyIdentity)(tableId, item.syncOperationId, { impactRevision: report.impactRevision, expectedTableRevision: report.expectedRevisions.tableRevision! })
   })
-  return <section aria-label="系统 UUID 身份初始化" className="grid gap-3 rounded-control border border-line p-3">
-    <h4 className="m-0 font-semibold">系统 UUID 身份</h4>
-    <p className="m-0 text-sm">在来源新增独立的 _autoflow_id 列，为现有数据行写入固定 UUID。只有完整核验后才建立本地绑定；原本地数据会换代，状态和环境关联不会继承。</p>
+  return <section aria-label="系统编号初始化" className="grid gap-3 rounded-control border border-line p-3">
+    <h4 className="m-0 font-semibold">系统编号</h4>
+    <p className="m-0 text-sm">在来源新增独立的 _autoflow_id 列，为现有数据行写入固定系统编号。只有完整核验后才建立本地绑定；原本地数据会被替换，状态和环境关联不会继承。</p>
     {pending.isPending ? <p role="status">正在读取原初始化操作…</p> : null}
     {pending.error ? <p role="alert">{safeProjectError(pending.error)}</p> : null}
     {pending.data?.map(item => <div key={item.syncOperationId} className="grid gap-2">
@@ -62,7 +62,7 @@ export function SheetsIdentityInitialization({ api, scopeKey, tableId, disabled,
         : <Button disabled={disabled || busy} onClick={() => void recover(item)}>核验原初始化</Button>}
     </div>)}
     {request ? <>
-      <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} disabled={disabled || busy} onChange={event => setConfirmed(event.target.checked)} />确认在来源 {request.spreadsheetId} 的工作表 {request.sheetId} 新建 {request.identityStrategy.columnId} 列并写入 UUID，以及更换本地数据代次。</label>
+      <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} disabled={disabled || busy} onChange={event => setConfirmed(event.target.checked)} />确认在来源 {request.spreadsheetId} 的工作表 {request.sheetId} 新建 {request.identityStrategy.columnId} 列并写入系统编号，并替换本地数据。</label>
       <Button disabled={disabled || busy || !confirmed || pending.isPending || pending.isError || Boolean(pending.data?.some(item => item.status !== 'failed'))} onClick={() => void start()}>初始化系统身份并绑定</Button>
     </> : null}
     {error ? <p role="alert">{error}</p> : null}

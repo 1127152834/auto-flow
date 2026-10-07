@@ -17,6 +17,7 @@
     "openapi:check": "node scripts/generate-api.mjs --check",
     "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
     "test:scripts": "node --test scripts/*.test.mjs",
+    "copy-lint": "node scripts/copy-lint.mjs",
     "smoke:desktop": "node scripts/smoke-desktop.mjs",
     "smoke:studio": "node scripts/smoke-studio-window.mjs",
     "test:pm2": "node scripts/verify-pm2-delivery.mjs"

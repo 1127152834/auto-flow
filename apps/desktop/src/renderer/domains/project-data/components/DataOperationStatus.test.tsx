@@ -11,7 +11,7 @@ describe('data operation status', () => {
   it('renders persisted import diagnostics without an ephemeral error prop', () => {
     const failed = { ...operation('failed'), error: { code: 'INVALID_PROJECT_DATA', message: 'internal message', details: { rowNumber: 2, columnIndex: 1, field: 'bytes', rule: 'type', reason: 'must be a finite JSON-safe number' } } } as Operation
     render(<DataOperationStatus operation={failed} />)
-    expect(screen.getByRole('alert')).toHaveTextContent('第 2 行，第 2 列，字段「bytes」：必须是有限的 JSON 安全数字')
+    expect(screen.getByRole('alert')).toHaveTextContent('第 2 行，第 2 列，字段「bytes」：必须是有效数字')
     expect(screen.queryByText('internal message')).not.toBeInTheDocument()
   })
   it('does not show success for an accepted operation', () => {

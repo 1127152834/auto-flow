@@ -1,7 +1,7 @@
 /** Project errors use known codes and bounded, actionable cell details. */
 const messages: Record<string, string> = {
   RUN_ASSET_PROJECT_MISMATCH: '运行数据不属于当前项目',
-  RUN_ASSET_IDENTITY_MISMATCH: '结果身份不匹配，请重新读取',
+  RUN_ASSET_IDENTITY_MISMATCH: '结果与所选运行不一致，请重新读取',
   RUN_ASSET_SIZE_MISMATCH: '产物大小不一致',
   RUN_ASSET_HASH_MISMATCH: '产物内容校验失败',
   ARTIFACT_FILE_MISSING: '运行产物文件缺失',
@@ -49,7 +49,7 @@ const messages: Record<string, string> = {
   FIELD_VALUES_INCOMPATIBLE: '现有记录不满足新的字段规则，请检查后重试',
 }
 const cellReasons: Record<string, string> = {
-  'must be a finite JSON-safe number': '必须是有限的 JSON 安全数字',
+  'must be a finite JSON-safe number': '必须是有效数字',
   'must be text': '必须是文本',
   'must be boolean': '必须是布尔值',
   'required values must not be null': '必填值不能为空',

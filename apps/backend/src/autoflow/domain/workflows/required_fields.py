@@ -538,7 +538,7 @@ MODULE_REQUIRED_FIELDS: dict[str, Any] = {'schemaRevision': 'WebRPA@5ccb900e8dcf
                                   'variableName': '结果变量'},
                  'project_end': {'retainEnvironment': '环境保留策略',
                                  'name': '新环境名称',
-                                 'recordTargets': '新增或已写记录的 RecordRef 列表'},
+                                 'recordTargets': '新增或已写记录的数据行列表'},
                  'proxy_change_ip': {'proxyId': '代理 ID／变量', 'locationId': '地点 ID／变量'},
                  'proxy_change_location': {'proxyId': '代理 ID／变量', 'locationId': '地点 ID／变量'},
                  'proxy_query': {'proxyId': '代理 ID／变量', 'locationId': '地点 ID／变量'},

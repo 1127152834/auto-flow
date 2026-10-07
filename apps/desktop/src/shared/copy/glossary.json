@@ -1,0 +1,11 @@
+[
+  { "term": "数据集代次", "preferred": "数据版本", "reason": "内部并发控制概念，用户只需知道数据是否已更新", "allowedIn": [] },
+  { "term": "执行代次", "preferred": "本次运行", "reason": "内部并发控制概念，用户只关心是哪一次运行", "allowedIn": [] },
+  { "term": "RecordRef", "preferred": "数据行", "reason": "内部类型名，用户看到的是表格中的一行数据", "allowedIn": [] },
+  { "term": "撤权", "preferred": "取消授权", "reason": "内部简称，用户习惯的说法是取消授权", "allowedIn": [] },
+  { "term": "datasetGeneration", "preferred": "数据版本", "reason": "代码字段名不应出现在界面", "allowedIn": [] },
+  { "term": "tableId", "preferred": "数据表", "reason": "代码字段名不应出现在界面", "allowedIn": [] },
+  { "term": "runId", "preferred": "本次运行", "reason": "代码字段名不应出现在界面；AI 助手诊断工具的参数名面向模型，保留", "allowedIn": ["apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts"] },
+  { "term": "UUID", "preferred": "系统编号", "reason": "技术缩写，用户不需要知道编号格式（待产品确认）；唯一编号生成器节点本身就是 UUID 工具，其名称与选项保留", "allowedIn": ["apps/desktop/src/renderer/domains/workflows/components/config-panels/UtilityToolsConfigs.tsx", "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx", "apps/desktop/src/renderer/domains/workflows/editor-store.ts"] },
+  { "term": "版本号", "preferred": "版本", "reason": "界面直接说版本，避免暗示需要手工填写编号", "allowedIn": [] }
+]
