@@ -1630,6 +1630,7 @@ export function Toolbar() {
         <Button variant="ghost" size="icon-sm" onClick={redo} disabled={!canRedo} aria-label="重做" title="重做 (Ctrl/Cmd+Shift+Z)">
           <Redo2 className="w-4 h-4" />
         </Button>
+        {config.system.canvasWidgets?.viewSwitch !== false && (<>
         <div className="mx-1 h-5 w-px bg-[hsl(var(--border))]" />
         <div className="flex items-center gap-0.5 rounded-control border border-[hsl(var(--border))] p-0.5">
           {([['flow', '流程图', Workflow], ['block', '模块条', LayoutList]] as const).map(([mode, label, Icon]) => (
@@ -1647,6 +1648,7 @@ export function Toolbar() {
             </button>
           ))}
         </div>
+        </>)}
       </div>
 
       <div className="flex flex-1 min-w-0 items-center justify-end gap-1">

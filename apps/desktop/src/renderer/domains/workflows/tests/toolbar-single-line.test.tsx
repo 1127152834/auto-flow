@@ -25,7 +25,7 @@ beforeEach(() => {
   useLayoutStore.getState().resetLayout()
   useAIAssistantStore.setState({ isPanelOpen: false })
   useGlobalConfigStore.setState(state => ({
-    config: { ...state.config, system: { ...state.config.system, showAIAssistantButton: true } },
+    config: { ...state.config, system: { ...state.config.system, showAIAssistantButton: true, canvasWidgets: { ...state.config.system.canvasWidgets, viewSwitch: true } } },
   }))
 })
 afterEach(() => { cleanup(); clearFlag('newStudioLayout'); setAutomation(false) })
@@ -63,6 +63,16 @@ describe('开关开启：单行工具栏', () => {
     expect(redo.disabled).toBe(false)
     fireEvent.click(redo)
     expect(useWorkflowStore.getState().variables).toHaveLength(1)
+  })
+
+  it('全局配置里关闭"流程图 / 模块条切换"后，工具栏不再显示视图切换', () => {
+    useGlobalConfigStore.setState(state => ({
+      config: { ...state.config, system: { ...state.config.system, canvasWidgets: { ...state.config.system.canvasWidgets, viewSwitch: false } } },
+    }))
+    render(<Toolbar />)
+    expect(screen.queryByRole('button', { name: '流程图' })).toBeNull()
+    expect(screen.queryByRole('button', { name: '模块条' })).toBeNull()
+    expect(screen.getByRole('button', { name: '撤销' })).toBeTruthy()
   })
 
   it('视图切换位于撤销重做之后、试跑之前，并写入布局', () => {
