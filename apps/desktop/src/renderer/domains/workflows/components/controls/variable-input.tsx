@@ -6,6 +6,14 @@ import { cn } from '../../lib/utils'
 import { getNodeConfigData, useWorkflowStore, moduleTypeLabels } from '../../editor-store'
 import { getModuleDefaultVar, VARIABLE_NAME_FIELDS } from '../../lib/moduleDefaultVars'
 import type { Variable } from '../../types/index'
+import { isEnabled } from '../../lib/featureFlags'
+import { useSignatureStore } from '../../hooks/stores/signatureStore'
+import { buildTagSources } from '../../lib/tagInput/sources'
+import type { TagSources } from '../../lib/tagInput/references'
+import type { TagInputHandle } from './TagInput'
+
+// CodeMirror lives in its own chunk, fetched only when the tagInput switch is on.
+const TagInput = React.lazy(() => import('./TagInput').then(module => ({ default: module.TagInput })))
 
 export interface VariableInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>, 'onChange'> {
   value: string
@@ -39,7 +47,81 @@ const BUILTIN_HIDDEN_VARIABLES: Variable[] = [
     builtin: true,
   },
 ]
-const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, VariableInputProps>(
+/** Built-in, global and node-defined variables, in the order the suggestion list shows them. */
+export function collectBaseVariables(globalVariables: Variable[], nodes: ReturnType<typeof useWorkflowStore.getState>['nodes']): Map<string, Variable> {
+    const variableMap = new Map<string, Variable>()
+    
+    // 首先添加内置隐含变量（优先级最高，始终存在）
+    BUILTIN_HIDDEN_VARIABLES.forEach(v => {
+      variableMap.set(v.name, v)
+    })
+    
+    // 添加全局变量
+    globalVariables.forEach(v => {
+      variableMap.set(v.name, v)
+    })
+    
+    // 从节点配置中提取变量名
+    nodes.forEach(node => {
+      const data = getNodeConfigData(node.data) as Record<string, unknown>
+      const moduleType = data.moduleType as string
+
+      VARIABLE_NAME_FIELDS.forEach(field => {
+        let varName = data[field] as string | undefined
+
+        // 如果字段没有值，尝试用集中表里的默认变量名
+        if (!varName || !varName.trim()) {
+          varName = getModuleDefaultVar(moduleType, field)
+        }
+
+        if (typeof varName === 'string' && varName.trim() && !variableMap.has(varName)) {
+          // 根据模块类型推断变量类型
+          let varType: Variable['type'] = 'string'
+          const moduleType = data.moduleType as string
+          
+          // 推断变量类型
+          if (moduleType === 'foreach' && field === 'indexVariable') {
+            varType = 'number'
+          } else if (moduleType === 'foreach_dict' && field === 'indexVariable') {
+            varType = 'number'
+          } else if (moduleType === 'loop' && field === 'indexVariable') {
+            varType = 'number'
+          } else if (moduleType === 'list_length') {
+            varType = 'number'
+          } else if (moduleType === 'random_number') {
+            varType = 'number'
+          } else if (['list_sum', 'list_average', 'list_max', 'list_min', 'math_round', 'math_floor', 'math_modulo', 'math_abs', 'math_sqrt', 'math_power'].includes(moduleType)) {
+            varType = 'number'
+          } else if (['list_operation', 'list_get', 'dict_keys', 'string_split', 'list_sort', 'list_unique', 'list_slice'].includes(moduleType)) {
+            varType = 'array'
+          } else if (['dict_operation', 'dict_get', 'json_parse', 'api_request'].includes(moduleType)) {
+            varType = 'object'
+          } else if (moduleType === 'network_capture') {
+            varType = 'array'
+          } else if (moduleType === 'webhook_trigger' || moduleType === 'email_trigger' || moduleType === 'api_trigger') {
+            // 触发器返回的数据通常是对象
+            varType = 'object'
+          } else if (moduleType === 'element_change_trigger' && field === 'saveChangeInfo') {
+            // 元素变化信息是对象
+            varType = 'object'
+          } else if (moduleType === 'math_base_convert') {
+            varType = 'string'
+          }
+          
+          variableMap.set(varName, {
+            name: varName,
+            value: undefined,
+            type: varType,
+            scope: 'local',
+            description: `来自「${(node.data.name as string) || moduleTypeLabels[moduleType as keyof typeof moduleTypeLabels] || moduleType}」`,
+          })
+        }
+      })
+    })
+  return variableMap
+}
+
+const LegacyVariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, VariableInputProps>(
   ({ className, value, onChange, disableVariableHint = false, multiline = false, rows = 3, ...props }, ref) => {
     const projectAutomation = useProjectInputs(state => state.automation)
     const projectFields = useProjectInputs(state => state.fields)
@@ -52,76 +134,7 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
     
     // 收集所有变量（全局变量 + 模块定义的变量 + 内置隐含变量）
     const allVariables = React.useMemo(() => {
-      const variableMap = new Map<string, Variable>()
-      
-      // 首先添加内置隐含变量（优先级最高，始终存在）
-      BUILTIN_HIDDEN_VARIABLES.forEach(v => {
-        variableMap.set(v.name, v)
-      })
-      
-      // 添加全局变量
-      globalVariables.forEach(v => {
-        variableMap.set(v.name, v)
-      })
-      
-      // 从节点配置中提取变量名
-      nodes.forEach(node => {
-        const data = getNodeConfigData(node.data) as Record<string, unknown>
-        const moduleType = data.moduleType as string
-
-        VARIABLE_NAME_FIELDS.forEach(field => {
-          let varName = data[field] as string | undefined
-
-          // 如果字段没有值，尝试用集中表里的默认变量名
-          if (!varName || !varName.trim()) {
-            varName = getModuleDefaultVar(moduleType, field)
-          }
-
-          if (typeof varName === 'string' && varName.trim() && !variableMap.has(varName)) {
-            // 根据模块类型推断变量类型
-            let varType: Variable['type'] = 'string'
-            const moduleType = data.moduleType as string
-            
-            // 推断变量类型
-            if (moduleType === 'foreach' && field === 'indexVariable') {
-              varType = 'number'
-            } else if (moduleType === 'foreach_dict' && field === 'indexVariable') {
-              varType = 'number'
-            } else if (moduleType === 'loop' && field === 'indexVariable') {
-              varType = 'number'
-            } else if (moduleType === 'list_length') {
-              varType = 'number'
-            } else if (moduleType === 'random_number') {
-              varType = 'number'
-            } else if (['list_sum', 'list_average', 'list_max', 'list_min', 'math_round', 'math_floor', 'math_modulo', 'math_abs', 'math_sqrt', 'math_power'].includes(moduleType)) {
-              varType = 'number'
-            } else if (['list_operation', 'list_get', 'dict_keys', 'string_split', 'list_sort', 'list_unique', 'list_slice'].includes(moduleType)) {
-              varType = 'array'
-            } else if (['dict_operation', 'dict_get', 'json_parse', 'api_request'].includes(moduleType)) {
-              varType = 'object'
-            } else if (moduleType === 'network_capture') {
-              varType = 'array'
-            } else if (moduleType === 'webhook_trigger' || moduleType === 'email_trigger' || moduleType === 'api_trigger') {
-              // 触发器返回的数据通常是对象
-              varType = 'object'
-            } else if (moduleType === 'element_change_trigger' && field === 'saveChangeInfo') {
-              // 元素变化信息是对象
-              varType = 'object'
-            } else if (moduleType === 'math_base_convert') {
-              varType = 'string'
-            }
-            
-            variableMap.set(varName, {
-              name: varName,
-              value: undefined,
-              type: varType,
-              scope: 'local',
-              description: `来自「${(node.data.name as string) || moduleTypeLabels[moduleType as keyof typeof moduleTypeLabels] || moduleType}」`,
-            })
-          }
-        })
-      })
-      
+      const variableMap = collectBaseVariables(globalVariables, nodes)
       for (const reference of projectReferences(projectAutomation, projectFields)) variableMap.set(reference.name, { name: reference.name, value: undefined, type: (reference.type === 'date' ? 'string' : reference.type) as Variable['type'], scope: 'local', description: reference.label })
       for (const output of nodeOutputs) variableMap.set(output.reference, { name: output.reference, value: undefined, type: 'string', scope: 'local', description: `「${output.label}」的${output.name}${output.required ? '' : '（可能为空，使用前请判断）'}` })
       return Array.from(variableMap.values())
@@ -410,6 +423,81 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
     )
   }
 )
+LegacyVariableInput.displayName = 'LegacyVariableInput'
+
+/** Tag-input flavour: references become business-named tags; the saved string is unchanged. */
+const TaggedVariableInput = React.forwardRef<TagInputHandle, VariableInputProps>(
+  ({ className, value, onChange, multiline = false, rows = 3, placeholder, disabled, readOnly, id, ...props }, ref) => {
+    const projectAutomation = useProjectInputs(state => state.automation)
+    const projectFields = useProjectInputs(state => state.fields)
+    const globalVariables = useWorkflowStore((state) => state.variables)
+    const nodes = useWorkflowStore((state) => state.nodes)
+    const edges = useWorkflowStore((state) => state.edges)
+    const selectedNodeId = useWorkflowStore((state) => state.selectedNodeId)
+    const signature = useSignatureStore(state => state.inputs)
+    const nodeOutputs = React.useMemo(() => selectedNodeId ? outputAvailability(nodes, edges, selectedNodeId) : [], [nodes, edges, selectedNodeId])
+    const nodeOutputsRef = React.useRef(nodeOutputs)
+    nodeOutputsRef.current = nodeOutputs
+
+    const sources = React.useMemo<TagSources>(() => {
+      const built = buildTagSources({
+        signature,
+        nodeOutputs,
+        variables: Array.from(collectBaseVariables(globalVariables, nodes).values()).map(variable => ({ name: variable.name, type: variable.type, description: variable.description, builtin: variable.builtin })),
+        projectRefs: projectReferences(projectAutomation, projectFields),
+        automationInputs: projectAutomation?.inputPlan.inputs.map(input => ({
+          inputId: input.inputId,
+          alias: input.alias,
+          fields: input.fieldBindings.map(binding => ({ fieldId: binding.inputFieldId, alias: binding.inputFieldAlias, type: projectFields.find(field => field.ref.fieldId === binding.fieldRef.fieldId)?.type })),
+        })),
+      })
+      return {
+        ...built,
+        onPick: candidate => {
+          const name = candidate.raw.slice(1, -1)
+          registerProjectReference(name)
+          // A stable output reference needs the source node to name its variable explicitly.
+          const output = nodeOutputsRef.current.find(item => item.reference === name && !item.named)
+          if (output) useWorkflowStore.getState().updateNodeConfig(output.nodeId, { [output.key]: output.variable })
+        },
+      }
+    }, [signature, nodeOutputs, globalVariables, nodes, projectAutomation, projectFields])
+
+    return (
+      <TagInput
+        ref={ref}
+        className={className}
+        value={value}
+        onChange={onChange}
+        sources={sources}
+        multiline={multiline}
+        rows={rows}
+        placeholder={placeholder}
+        disabled={disabled}
+        readOnly={readOnly}
+        id={id}
+        aria-label={props['aria-label']}
+        aria-invalid={props['aria-invalid'] === true || props['aria-invalid'] === 'true'}
+      />
+    )
+  }
+)
+TaggedVariableInput.displayName = 'TaggedVariableInput'
+
+/**
+ * Same name and props as ever. With the client switch `tagInput` on, plain text fields render as TagInput;
+ * password-like fields (`type`) and variable-name fields (`disableVariableHint`) always keep the native input.
+ */
+const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, VariableInputProps>((props, ref) => {
+  const [tagged] = React.useState(() => isEnabled('tagInput') && !props.disableVariableHint && (props.type === undefined || props.type === 'text'))
+  if (!tagged) return <LegacyVariableInput {...props} ref={ref} />
+  // Until the editor chunk arrives (or if it fails to load) the field stays a usable native input.
+  return (
+    <React.Suspense fallback={<LegacyVariableInput {...props} ref={ref} />}>
+      <TaggedVariableInput {...props} ref={ref as unknown as React.Ref<TagInputHandle>} />
+    </React.Suspense>
+  )
+})
 VariableInput.displayName = 'VariableInput'
 
 export { VariableInput }
