@@ -60,23 +60,32 @@ describe('useFailureFocus', () => {
   }
   const render = (status: string) => act(() => { root.render(<Harness status={status} />) })
 
+  let frames: Array<(() => void) | null> = []
+  const flushFrame = () => act(() => { const run = frames; frames = []; run.forEach((f) => f?.()) })
+  const flushFrames = () => { flushFrame(); flushFrame() }
+
   beforeEach(() => {
+    frames = []
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) => frames.push(cb))
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => { frames[id - 1] = null })
     setCenter.mockClear()
     useNodeRunStore.setState({ statuses: {} })
     delete document.documentElement.dataset.motion
     container = document.createElement('div')
     root = createRoot(container)
   })
-  afterEach(() => act(() => root.unmount()))
+  afterEach(() => { act(() => root.unmount()); vi.unstubAllGlobals() })
 
   it('运行中不平移；失败后平移一次并保持当前缩放', () => {
     render('running')
     act(() => useNodeRunStore.getState().setStatus('n1', 'failed'))
     expect(setCenter).not.toHaveBeenCalled()
     render('failed')
+    flushFrames()
     expect(setCenter).toHaveBeenCalledWith(150, 70, { zoom: 0.8, duration: 280 })
     act(() => useNodeRunStore.getState().setStatus('n2', 'success'))
     render('failed')
+    flushFrames()
     expect(setCenter).toHaveBeenCalledTimes(1)
   })
 
@@ -84,6 +93,7 @@ describe('useFailureFocus', () => {
     document.documentElement.dataset.motion = m
     useNodeRunStore.setState({ statuses: { n1: 'failed' } })
     render('failed')
+    flushFrames()
     expect(setCenter.mock.calls[0][2].duration).toBe(0)
   })
 
@@ -93,11 +103,39 @@ describe('useFailureFocus', () => {
     act(() => onMoveStart({ type: 'mousedown' }))
     useNodeRunStore.setState({ statuses: { n1: 'failed' } })
     render('failed')
+    flushFrames()
     expect(setCenter).not.toHaveBeenCalled()
     useNodeRunStore.setState({ statuses: { n1: 'failed' } })
     render('running')
     render('failed')
+    flushFrames()
     expect(setCenter).toHaveBeenCalledTimes(1)
+  })
+
+  it('运行期间用户平移画布，不会抑制之后这次失败的定位', () => {
+    render('running')
+    act(() => onMoveStart({ type: 'mousedown' }))
+    useNodeRunStore.setState({ statuses: { n1: 'failed' } })
+    render('failed')
+    flushFrames()
+    expect(setCenter).toHaveBeenCalledTimes(1)
+  })
+
+  it('等画布量好新尺寸（两帧）之后才居中；卸载时取消', () => {
+    useNodeRunStore.setState({ statuses: { n1: 'failed' } })
+    render('failed')
+    expect(setCenter).not.toHaveBeenCalled()
+    flushFrame()
+    expect(setCenter).not.toHaveBeenCalled()
+    flushFrame()
+    expect(setCenter).toHaveBeenCalledTimes(1)
+    setCenter.mockClear()
+    render('running')
+    render('failed')
+    act(() => root.unmount())
+    flushFrames()
+    expect(setCenter).not.toHaveBeenCalled()
+    root = createRoot(container)
   })
 
   it('程序化移动（event 为空）不算用户操作', () => {
@@ -106,6 +144,7 @@ describe('useFailureFocus', () => {
     act(() => onMoveStart(null))
     useNodeRunStore.setState({ statuses: { n1: 'failed' } })
     render('failed')
+    flushFrames()
     expect(setCenter).toHaveBeenCalledTimes(1)
   })
 })

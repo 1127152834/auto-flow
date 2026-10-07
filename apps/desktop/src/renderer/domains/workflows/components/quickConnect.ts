@@ -43,6 +43,9 @@ export function useFailureFocus(
   const statuses = useNodeRunStore((s) => s.statuses)
   const panned = useRef(false)
   const userMoved = useRef(false)
+  const frame = useRef<number | null>(null)
+  const statusRef = useRef(executionStatus)
+  statusRef.current = executionStatus
 
   useEffect(() => {
     if (executionStatus !== 'failed') {
@@ -55,13 +58,19 @@ export function useFailureFocus(
     const node = failedId ? nodes.find((n) => n.id === failedId) : undefined
     if (!node) return
     panned.current = true
-    instance.current.setCenter(
-      node.position.x + (node.width || 200) / 2,
-      node.position.y + (node.height || 100) / 2,
-      { zoom: instance.current.getViewport().zoom, duration: failurePanDuration() },
-    )
+    const center = { x: node.position.x + (node.width || 200) / 2, y: node.position.y + (node.height || 100) / 2 }
+    // 运行结束时底部面板可能同时收起、画布尺寸随之变化；等两帧让画布量好新尺寸再居中
+    frame.current = requestAnimationFrame(() => {
+      frame.current = requestAnimationFrame(() => {
+        frame.current = null
+        const target = instance.current
+        if (target) target.setCenter(center.x, center.y, { zoom: target.getViewport().zoom, duration: failurePanDuration() })
+      })
+    })
   }, [executionStatus, statuses, nodes, instance])
 
-  /** 传给 ReactFlow onMoveStart：event 非空才是用户操作 */
-  return (event: unknown) => { if (event) userMoved.current = true }
+  useEffect(() => () => { if (frame.current !== null) cancelAnimationFrame(frame.current) }, [])
+
+  /** 传给 ReactFlow onMoveStart：event 非空才是用户操作；只有失败之后的操作才抑制这次定位 */
+  return (event: unknown) => { if (event && statusRef.current === 'failed') userMoved.current = true }
 }

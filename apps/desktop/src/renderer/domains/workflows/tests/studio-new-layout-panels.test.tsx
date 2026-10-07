@@ -77,6 +77,22 @@ describe('ModuleSidebar 新布局折叠记忆', () => {
     expect(useLayoutStore.getState().leftCollapsed).toBe(false)
   })
 
+  it('小屏幕自动折叠只影响本次会话，不写入持久偏好', () => {
+    setFlag('newStudioLayout', true)
+    const original = window.innerWidth
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 })
+    try {
+      render(<ModuleSidebar />)
+      expect(screen.getByRole('button', { name: '展开模块列表' })).toBeTruthy()
+      expect(useLayoutStore.getState().leftCollapsed).toBe(false)
+      fireEvent.click(screen.getByRole('button', { name: '展开模块列表' }))
+      expect(screen.getByRole('button', { name: '收起模块列表' })).toBeTruthy()
+      expect(useLayoutStore.getState().leftCollapsed).toBe(false)
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original })
+    }
+  })
+
   it('开关关：折叠仍是本地状态，不写入 layoutStore', () => {
     render(<ModuleSidebar />)
     fireEvent.click(screen.getByRole('button', { name: '收起模块列表' }))

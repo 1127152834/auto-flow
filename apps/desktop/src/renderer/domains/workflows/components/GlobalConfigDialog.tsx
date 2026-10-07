@@ -11,7 +11,8 @@ import { Slider } from './controls/slider'
 import { Radio } from './controls/radio-group'
 import { useConfirm } from './controls/confirm-dialog'
 import { DialogPortal } from './controls/dialog-portal'
-import { useGlobalConfigStore, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
+import { useGlobalConfigStore, resolveMinimapVisible, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
+import { isEnabled } from '../lib/featureFlags'
 import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Monitor, Globe, Zap, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
 import { systemApi, localWorkflowApi, modelApi, type ModelOptionList } from '../api'
 import { aiAssistantApi } from '../api/aiAssistantApi'
@@ -427,7 +428,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                   <div className="flex-1">
                     <Label className="text-sm font-medium text-gray-700">显示AI小助手入口</Label>
                     <p className="text-xs text-gray-500 mt-1">
-                      在编辑器右下角显示AI小助手的浮动按钮（快捷键 Ctrl+K 不受影响）
+                      在编辑器右下角显示AI小助手的浮动按钮（快捷键不受影响）
                     </p>
                   </div>
                   <Switch
@@ -454,8 +455,12 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                       <div key={key} className="flex items-center justify-between">
                         <span className="text-[13px] text-gray-600">{label}</span>
                         <Switch
-                          checked={config.system.canvasWidgets?.[key] !== false}
-                          onCheckedChange={(c) => updateSystemConfig({ canvasWidgets: { ...config.system.canvasWidgets, [key]: c } })}
+                          checked={key === 'minimap' ? resolveMinimapVisible(config, isEnabled('newStudioLayout')) : config.system.canvasWidgets?.[key] !== false}
+                          onCheckedChange={(c) => updateSystemConfig({
+                            canvasWidgets: { ...config.system.canvasWidgets, [key]: c },
+                            // 新布局下小地图默认关闭；用户在这里的任何选择都算显式设置
+                            ...(key === 'minimap' ? { minimapExplicit: true } : {}),
+                          })}
                         />
                       </div>
                     ))}

@@ -1804,8 +1804,12 @@ function ModuleSidebarRaw() {
   const [localCollapsed, setLocalCollapsed] = useState(false)
   const storedCollapsed = useLayoutStore((s) => s.leftCollapsed)
   const setStoredCollapsed = useLayoutStore((s) => s.setLeftCollapsed)
-  const isCollapsed = newLayout ? storedCollapsed : localCollapsed
-  const setIsCollapsed = newLayout ? setStoredCollapsed : setLocalCollapsed
+  // 新布局下，小屏幕的自动折叠只在本次会话生效，不写入用户的持久偏好
+  const [autoCollapsed, setAutoCollapsed] = useState(false)
+  const isCollapsed = newLayout ? storedCollapsed || autoCollapsed : localCollapsed
+  const setIsCollapsed = newLayout
+    ? (collapsed: boolean) => { setAutoCollapsed(false); setStoredCollapsed(collapsed) }
+    : setLocalCollapsed
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showManageDialog, setShowManageDialog] = useState(false)
@@ -1826,7 +1830,8 @@ function ModuleSidebarRaw() {
     const handleResize = () => {
       // 屏幕宽度小于1024px时自动折叠
       if (window.innerWidth < 1024) {
-        setIsCollapsed(true)
+        if (newLayout) setAutoCollapsed(true)
+        else setLocalCollapsed(true)
       }
     }
 

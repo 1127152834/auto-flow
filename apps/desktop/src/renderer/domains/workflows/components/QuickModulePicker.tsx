@@ -278,7 +278,7 @@ export function QuickModulePicker({
           )}
           {filteredCategories.length === 0 ? (
             <div className="text-center py-12 text-[12.5px] text-[hsl(var(--muted-foreground))]">
-              '无搜索结果'
+              无搜索结果
             </div>
           ) : (
             filteredCategories.map(({ category, modules }) => (

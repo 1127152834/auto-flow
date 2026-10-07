@@ -136,6 +136,14 @@ describe('QuickModulePicker', () => {
     expect(onSelect).toHaveBeenCalledTimes(1)
   })
 
+  it('搜索没有结果时显示"无搜索结果"，不带多余引号', () => {
+    render()
+    type('zzzz-不存在')
+    expect(container.textContent).toContain('无搜索结果')
+    expect(container.textContent).not.toContain("'无搜索结果'")
+    expect(quick()).toBeNull()
+  })
+
   it('焦点可见：模块项与收藏按钮带 focus-visible 样式', () => {
     render()
     expect(items()[0].className).toContain('focus-visible:ring-2')
