@@ -55,3 +55,8 @@ it.each([
 ])('presents the sheets sync code %s with decided copy', (code, message) => {
   expect(safeProjectError({ code, message: id, spreadsheetId: id })).toBe(message)
 })
+it('explains a refused preview that would keep the login environment, with the way out', () => {
+  const message = safeProjectError(new ApiClientError('raw', 409, 'PREVIEW_CANNOT_SAVE_ENVIRONMENT'))
+  expect(message).toContain('保留当前环境')
+  expect(message).toContain('真实写入')
+})

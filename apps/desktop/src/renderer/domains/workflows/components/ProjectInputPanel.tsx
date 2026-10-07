@@ -6,6 +6,10 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../../
 import { bindingReference, useProjectInputs, type DebugInputs, type DebugSelection, type InputObject } from '../project-inputs'
 
 type View = 'definition' | 'debug' | 'task'
+const recordLabel = (table: { identity?: { mode?: string; fieldId?: string } } | undefined, record: Pick<InputObject, 'values'> | undefined, position?: number) => {
+  const cell = table?.identity?.mode === 'field' ? record?.values?.find(item => item.fieldId === table.identity?.fieldId) : undefined
+  return cell && cell.value != null && !/password|密码/i.test(cell.fieldName) ? text(cell.value) : position ? `第 ${position} 行` : '已选择的记录'
+}
 const text = (value: unknown) => value === undefined ? '未提供' : value === null ? '空值' : typeof value === 'object' ? JSON.stringify(value) : String(value)
 const types: Record<string, string> = { string: '文本', number: '数字', boolean: '布尔', date: '日期' }
 export function ProjectInputPanel() {
@@ -25,7 +29,7 @@ export function ProjectInputPanel() {
     <header className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><strong>项目数据 · {automation.name}</strong><p className="mb-0 text-xs text-muted">{view === 'task' ? task ? `本次任务 #${task.task.taskOrdinal} · ${task.task.status}` : '尚未执行任务' : '输入与参数由当前自动化配置'}</p></div><div className="flex gap-2"><Button size="sm" disabled={busy || running || hasPendingProjectRun()} onClick={() => void useProjectInputs.getState().load().catch(() => {})}>刷新输入定义</Button>{([['definition', '输入定义'], ['debug', '调试输入'], ['task', '本次任务']] as const).map(([id, title]) => <Button size="sm" key={id} aria-pressed={view === id} onClick={() => { setView(id); if (id === 'debug' && !debug && !busy) void preview() }}>{title}</Button>)}</div></header>
     {error && <div role="alert" className="text-danger">{error}{hasPendingProjectRun() && <Button size="sm" onClick={() => void runProjectOnce().catch(() => {})}>核验本次运行</Button>}</div>}
     {notice && <p role="status">{notice}</p>}
-    <label className="mb-3 flex items-start gap-2 text-xs"><input type="checkbox" aria-label="运行一次时真实写入项目数据" checked={realWrites} disabled={busy || running} onChange={event => setRealWrites(event.target.checked)}/><span>运行一次时真实写入项目数据<br/><span className="text-muted">{realWrites ? '会真实修改记录、状态和处理进度。' : '默认只预览：本次写入只在这次运行里可见，不改动真实数据和登录状态；网页上的点击、提交仍会真实执行。'}</span></span></label>
+    <label className="mb-3 flex items-start gap-2 text-xs"><input type="checkbox" aria-label="运行一次时真实写入项目数据" checked={realWrites} disabled={busy || running} onChange={event => setRealWrites(event.target.checked)}/><span>运行一次时真实写入项目数据<br/><span className="text-muted">{realWrites ? '记录、状态和处理进度都会真实修改。' : '本次写入只在这次运行里可见，不改动真实数据和登录状态。'}</span></span></label>
     {copyError && <p role="status">{copyError}</p>}
     {view === 'definition' && automation.inputPlan.inputs.some(item => !item.signatureInput) ? <div className="mb-3 flex flex-wrap items-center gap-3 rounded-control border border-line p-3 text-xs"><span className="min-w-0 flex-1">输入引用目前绑定在这个自动化上。转换为流程输入后，同一工作流可以被其他自动化复用，改名也不会影响引用。</span><Button size="sm" disabled={busy || running} onClick={() => void useProjectInputs.getState().convertToSignature()}>转换为流程输入</Button></div> : null}
     <div className="grid min-h-56 flex-1 grid-cols-[12rem_minmax(0,1fr)] rounded-control border border-line">
@@ -33,7 +37,7 @@ export function ProjectInputPanel() {
       <div className="min-w-0 p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><strong>{input?.alias ?? '固定参数'}</strong>{view === 'debug' && input && <div className="flex gap-2"><Button size="sm" disabled={busy || input.mode === 'fixedRecord'} onClick={() => setPicker(true)}>选择数据</Button>{!input.required && <Button size="sm" disabled={busy} onClick={() => void choose(inputId, null)}>本次不提供</Button>}</div>}</div>
         {input && <p className="text-xs text-muted">来源：{tables.find(table => table.tableId === input.tableId)?.name ?? "项目数据表"} · 条件：{conditionText(input.filter, fields, statuses)}</p>}
-        {input && view !== 'definition' && <p className="text-xs text-muted">{object?.recordRef ? `记录：${object.recordRef.recordKey.value} · ${view === 'debug' ? '尚未领取' : '任务原始输入'}` : view === 'task' && !task ? '尚未执行任务' : '本次未提供'}{input.mode === 'fixedRecord' ? ' · 固定记录' : ''}</p>}
+        {input && view !== 'definition' && <p className="text-xs text-muted">{object?.recordRef ? `记录：${recordLabel(tables.find(table => table.tableId === input.tableId), object)} · ${view === 'debug' ? '尚未领取' : '任务原始输入'}` : view === 'task' && !task ? '尚未执行任务' : '本次未提供'}{input.mode === 'fixedRecord' ? ' · 固定记录' : ''}</p>}
         <dl className="divide-y divide-line">{input ? input.fieldBindings.map(binding => {
           const field = fields.find(item => item.ref.fieldId === binding.fieldRef.fieldId)
           const value = object?.values?.find(cell => cell.fieldId === binding.fieldRef.fieldId)?.value
@@ -44,15 +48,16 @@ export function ProjectInputPanel() {
         {view === 'debug' && <div className="mt-4 flex items-center gap-3"><Button size="sm" disabled={busy} onClick={() => void preview()}>重新选择默认数据</Button><span className="text-xs text-muted">{busy ? '正在读取…' : debug?.selectionStatus === 'ready' ? '完整输入组已就绪，运行时重新校验并领取' : '尚未取得完整输入组'}</span></div>}
       </div>
     </div>
-    <p className="mb-0 mt-3 text-xs text-muted">真实单任务调试 · 修改会保存到项目数据</p>
+    <p className="mb-0 mt-3 text-xs text-muted">{realWrites ? '会改动项目数据，网页操作同样真实执行' : '项目数据仅预览，网页操作仍真实执行'}</p>
     {input && <CandidatePicker key={inputId} open={picker} onOpenChange={setPicker} inputId={inputId} title={input.alias} onChoose={async value => { await choose(inputId, value); setPicker(false) }} />}
   </section>
 }
 function CandidatePicker({ open, onOpenChange, inputId, title, onChoose }: { open: boolean; onOpenChange(open: boolean): void; inputId: string; title: string; onChoose(value: DebugSelection[string]): Promise<void> }) {
   const [search, setSearch] = useState(''), [query, setQuery] = useState(''), [cursors, setCursors] = useState<(string | null)[]>([null]), [refresh, setRefresh] = useState(0)
   const [page, setPage] = useState<DebugInputs | null>(null), [error, setError] = useState(''), [busy, setBusy] = useState(false), [selected, setSelected] = useState<number | null>(null)
-  const { automation, fields, statuses } = useProjectInputs()
+  const { automation, fields, statuses, tables } = useProjectInputs()
   const input = automation?.inputPlan.inputs.find(item => item.inputId === inputId)
+  const table = tables.find(item => item.tableId === input?.tableId)
   const version = useRef(0), cursor = cursors[cursors.length - 1]
   useEffect(() => {
     const request = ++version.current
@@ -64,7 +69,7 @@ function CandidatePicker({ open, onOpenChange, inputId, title, onChoose }: { ope
   return <Dialog open={open} onOpenChange={onOpenChange} busy={busy}><DialogContent className="w-[min(92vw,56rem)] max-w-4xl"><header><DialogTitle>选择{title}数据</DialogTitle><DialogDescription>仅显示符合自动化条件的候选；每次选择一条，运行时重新校验。</DialogDescription></header>
     {input && <p className="text-sm text-muted">条件：{conditionText(input.filter, fields, statuses)}</p>}
     <form className="flex gap-2" onSubmit={event => { event.preventDefault(); setCursors([null]); setQuery(search); setRefresh(value => value + 1) }}><input aria-label="搜索候选数据" className="min-w-0 flex-1 rounded-control border border-line px-3" value={search} onChange={event => setSearch(event.target.value)} /><Button type="submit" disabled={busy}>搜索</Button><Button disabled={busy} onClick={() => setRefresh(value => value + 1)}>刷新</Button></form>
-    {error && <p role="alert">{error}</p>}{busy ? <p role="status">正在读取…</p> : <div className="max-h-80 overflow-auto"><table className="w-full text-left text-sm"><thead><tr><th>选择</th><th>记录</th><th>字段值</th><th>可选状态</th></tr></thead><tbody>{page?.items.map((raw, index) => { const item = raw as unknown as InputObject & { selectable: boolean; reason?: string; selection: DebugSelection[string] }; return <tr key={index} className="border-t border-line"><td className="p-3"><input type="radio" name="debug-record" aria-label={`选择记录 ${item.recordRef?.recordKey.value}`} disabled={!item.selectable} checked={selected === index} onChange={() => setSelected(index)} /></td><td>{item.recordRef?.recordKey.value}</td><td>{item.values?.map(cell => /password|密码/i.test(cell.fieldName) ? '••••••••' : text(cell.value)).join(' · ')}</td><td>{item.reason ?? '可选择'}</td></tr> })}</tbody></table>{!page?.items.length && <p>本页没有可展示的候选数据</p>}</div>}
+    {error && <p role="alert">{error}</p>}{busy ? <p role="status">正在读取…</p> : <div className="max-h-80 overflow-auto"><table className="w-full text-left text-sm"><thead><tr><th>选择</th><th>记录</th><th>字段值</th><th>可选状态</th></tr></thead><tbody>{page?.items.map((raw, index) => { const item = raw as unknown as InputObject & { selectable: boolean; reason?: string; selection: DebugSelection[string] }; return <tr key={index} className="border-t border-line"><td className="p-3"><input type="radio" name="debug-record" aria-label={`选择记录 ${recordLabel(table, item, index + 1)}`} disabled={!item.selectable} checked={selected === index} onChange={() => setSelected(index)} /></td><td>{recordLabel(table, item, index + 1)}</td><td>{item.values?.map(cell => /password|密码/i.test(cell.fieldName) ? '••••••••' : text(cell.value)).join(' · ')}</td><td>{item.reason ?? '可选择'}</td></tr> })}</tbody></table>{!page?.items.length && <p>本页没有可展示的候选数据</p>}</div>}
     <footer className="flex justify-end gap-2"><Button disabled={busy || cursors.length === 1} onClick={() => setCursors(value => value.slice(0, -1))}>上一页</Button><Button disabled={busy || !page?.nextCursor} onClick={() => setCursors(value => [...value, page!.nextCursor])}>下一页</Button><Button onClick={() => onOpenChange(false)}>取消</Button><Button disabled={busy || selected === null} onClick={() => { if (selected === null || !page) return; setBusy(true); void onChoose(page.items[selected].selection as DebugSelection[string]).finally(() => setBusy(false)) }}>使用此条</Button></footer>
   </DialogContent></Dialog>
 }

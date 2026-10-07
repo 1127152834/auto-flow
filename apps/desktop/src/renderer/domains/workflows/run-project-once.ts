@@ -7,6 +7,7 @@ import { getStudioTransportRevision } from './api/transport'
 import { advanceRunEvent, type RunEventCursor } from '../project-runs/events'
 import { useNodeRunStore } from './hooks/stores/nodeRunStore'
 import type { LogLevel } from './types'
+import { safeProjectError } from '../projects/presentation-error'
 import { projectRequest, projectRoot, projectRuns, useProjectInputs } from './project-inputs'
 
 type Command = { key: string; body: components['schemas']['BatchStartRequest']; automationId: string; projectId: string; workflowId: string; batchId?: string }
@@ -42,7 +43,7 @@ export async function runProjectOnce() {
       sessionStorage.setItem(key, JSON.stringify(command))
     } catch (error) {
       if (error instanceof ApiClientError && error.status >= 400 && error.status < 500 && error.status !== 408) sessionStorage.removeItem(key)
-      if (current()) useProjectInputs.setState({ error: String(error) })
+      if (current()) useProjectInputs.setState({ error: error instanceof ApiClientError && error.code === 'PREVIEW_CANNOT_SAVE_ENVIRONMENT' ? safeProjectError(error) : String(error) })
       throw error
     }
   }

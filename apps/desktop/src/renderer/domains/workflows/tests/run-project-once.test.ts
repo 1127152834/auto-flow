@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest'
 import { ApiClientError } from '../../../shared/api/client'
-const f = vi.hoisted(() => ({ state: {} as { automation: Record<string, string | number>; debug: { selectionStatus: string; selection: { input: { recordRef: { recordKey: { value: string } }; contentRevision: number } | null } }; epoch: number; task: { task: { batchId: string; status: string } } | null }, store: { id: 'w', setExecutionStatus: vi.fn(), setBottomPanelTab: vi.fn(), setCurrentExecutionRunId: vi.fn(), setCurrentExecutionWorkflowId: vi.fn(), clearLogs: vi.fn(), clearCollectedData: vi.fn(), addLogBatch: vi.fn() }, request: vi.fn(), api: { start: vi.fn(), resumeStart: vi.fn(), getBatch: vi.fn(), listTasks: vi.fn(), getTask: vi.fn(), stop: vi.fn() } }))
+const f = vi.hoisted(() => ({ state: {} as { automation: Record<string, string | number>; debug: { selectionStatus: string; selection: { input: { recordRef: { recordKey: { value: string } }; contentRevision: number } | null } }; epoch: number; error?: string | null; task: { task: { batchId: string; status: string } } | null }, store: { id: 'w', setExecutionStatus: vi.fn(), setBottomPanelTab: vi.fn(), setCurrentExecutionRunId: vi.fn(), setCurrentExecutionWorkflowId: vi.fn(), clearLogs: vi.fn(), clearCollectedData: vi.fn(), addLogBatch: vi.fn() }, request: vi.fn(), api: { start: vi.fn(), resumeStart: vi.fn(), getBatch: vi.fn(), listTasks: vi.fn(), getTask: vi.fn(), stop: vi.fn() } }))
 vi.mock('../api/config', () => ({ getStudioOpenContext: () => ({ automationId: 'a', projectId: 'p', workflowId: 'w' }), getStudioResourceScope: () => 'workspace-p' }))
 vi.mock('../api/transport', () => ({ getStudioTransportRevision: () => 1 }))
 vi.mock('../editor-store', () => ({ useWorkflowStore: { getState: () => f.store } }))
@@ -62,4 +62,15 @@ it('does not show a previous successful task as the result of a rejected claim',
   await runProjectOnce()
   expect(f.store.setExecutionStatus).toHaveBeenLastCalledWith('failed')
   expect(f.state.task).toBeNull()
+})
+
+it('shows why a preview with a retained environment was refused and clears the pending start', async () => {
+  f.api.start.mockRejectedValueOnce(new ApiClientError('raw', 409, 'PREVIEW_CANNOT_SAVE_ENVIRONMENT'))
+  await expect(runProjectOnce()).rejects.toThrow()
+  expect(f.api.getBatch).not.toHaveBeenCalled()
+  expect(f.state.error).toContain('保留当前环境')
+  expect(f.state.error).toContain('真实写入')
+  await runProjectOnce()
+  expect(f.api.start).toHaveBeenCalledTimes(2)
+  expect(f.api.resumeStart).not.toHaveBeenCalled()
 })

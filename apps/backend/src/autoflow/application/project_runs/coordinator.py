@@ -525,6 +525,14 @@ class ProjectRunCoordinator:
             created_at=now,
             uow=session,
         )
+        if start.execution_mode == "previewWrites":
+            from .end import plan_retains_environment
+            if plan_retains_environment(prepared.execution_plan):
+                raise ProjectRunError(
+                    "PREVIEW_CANNOT_SAVE_ENVIRONMENT",
+                    "试跑只预览项目数据，不会保存登录环境。请取消结束节点里的“保留当前环境”，或在启动时选择真实写入后再运行",
+                    409,
+                )
         frozen = _json_dates(
             {
                 "automation": _json_dates(_with_processing_input(automation_to_dict(automation), chosen_input)),

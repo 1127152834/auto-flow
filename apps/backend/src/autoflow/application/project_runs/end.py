@@ -35,7 +35,7 @@ from autoflow.infrastructure.database.workflow_runtime_models import (
 )
 
 
-def _end_configs(plan: Mapping[str, Any], node_id: str) -> list[dict[str, Any]]:
+def _end_configs(plan: Mapping[str, Any], node_id: str | None) -> list[dict[str, Any]]:
     documents = [plan.get("document", plan)]
     documents.extend(plan.get("workflowDependencies", {}).values())
     documents.extend(
@@ -53,13 +53,21 @@ def _end_configs(plan: Mapping[str, Any], node_id: str) -> list[dict[str, Any]]:
             data = node.get("data", node)
             if (
                 isinstance(data, Mapping)
-                and node.get("id", node.get("nodeId")) == node_id
+                and (node_id is None or node.get("id", node.get("nodeId")) == node_id)
                 and data.get("moduleType", node.get("moduleType")) == "project_end"
             ):
                 raw = data.get("config", data)
                 if isinstance(raw, Mapping):
                     configs.append(normalize_project_end(raw))
     return configs
+
+
+def plan_retains_environment(plan: Mapping[str, Any]) -> bool:
+    """True when any End in the frozen plan (sub-workflows included) keeps the login environment."""
+    try:
+        return any(config.get("retainEnvironment") for config in _end_configs(plan, None))
+    except ValueError:
+        return False  # an invalid End is rejected by its own run-time validation
 
 
 class ProjectRunEnd:

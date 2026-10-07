@@ -46,6 +46,7 @@ const messages: Record<string, string> = {
   SYNC_NOT_IMPLEMENTED: '该来源能力尚未交付，请先在来源页核对当前边界',
   SYNC_NOT_RECONCILABLE: '当前操作没有可核验的目标，请先核对原请求',
   SYNC_NOT_ABANDONABLE: '这条改动仍在处理中，不能放弃',
+  PREVIEW_CANNOT_SAVE_ENVIRONMENT: '试跑只预览项目数据，不会保存登录环境。请取消结束节点里的“保留当前环境”，或勾选“真实写入项目数据”后再运行',
   FIELD_VALUES_INCOMPATIBLE: '现有记录不满足新的字段规则，请检查后重试',
 }
 const cellReasons: Record<string, string> = {
