@@ -25,6 +25,11 @@ describe('ModuleSidebar 数据标签页', () => {
     expect(screen.queryByRole('heading', { name: '输入字段' })).toBeNull()
   })
 
+  it('三个标签的文字不换行（256px 栏宽实测曾把"自定义"挤成两行）', () => {
+    render(<ModuleSidebar />)
+    for (const name of ['内置', '自定义', '数据']) expect(screen.getByRole('button', { name }).className).toContain('whitespace-nowrap')
+  })
+
   it('折叠再展开后停留在数据标签页，折叠记忆不回归', () => {
     setFlag('newStudioLayout', true)
     render(<ModuleSidebar />)

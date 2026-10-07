@@ -2046,7 +2046,7 @@ function ModuleSidebarRaw() {
             <div className="flex gap-1 p-1 bg-[hsl(var(--slate-100))] rounded-control border border-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)]">
               <button
                 onClick={() => setActiveTab('builtin')}
-                className={`flex-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1.5 border ${
+                className={`flex-1 min-w-0 px-1 py-1.5 text-[12px] font-semibold whitespace-nowrap rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1 border ${
                   activeTab === 'builtin'
                     ? '!bg-[hsl(var(--brand-600))] !text-white !border-[hsl(var(--brand-700))] shadow-brand-glow'
                     : '!bg-transparent !text-[hsl(var(--muted-foreground))] !border-transparent hover:!text-[hsl(var(--brand-700))] hover:!bg-[hsl(var(--card))]'
@@ -2057,7 +2057,7 @@ function ModuleSidebarRaw() {
               </button>
               <button
                 onClick={() => setActiveTab('custom')}
-                className={`flex-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1.5 border ${
+                className={`flex-1 min-w-0 px-1 py-1.5 text-[12px] font-semibold whitespace-nowrap rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1 border ${
                   activeTab === 'custom'
                     ? '!bg-[hsl(var(--violet-600))] !text-white !border-[hsl(var(--violet-700))] shadow-pop'
                     : '!bg-transparent !text-[hsl(var(--muted-foreground))] !border-transparent hover:!text-[hsl(var(--violet-700))] hover:!bg-[hsl(var(--card))]'
@@ -2068,7 +2068,7 @@ function ModuleSidebarRaw() {
               </button>
               <button
                 onClick={() => setActiveTab('data')}
-                className={`flex-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1.5 border ${
+                className={`flex-1 min-w-0 px-1 py-1.5 text-[12px] font-semibold whitespace-nowrap rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1 border ${
                   activeTab === 'data'
                     ? '!bg-[hsl(var(--brand-600))] !text-white !border-[hsl(var(--brand-700))] shadow-brand-glow'
                     : '!bg-transparent !text-[hsl(var(--muted-foreground))] !border-transparent hover:!text-[hsl(var(--brand-700))] hover:!bg-[hsl(var(--card))]'
